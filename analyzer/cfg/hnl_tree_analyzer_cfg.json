@@ -1,0 +1,7 @@
+{
+	"background"  	: ["/afs/cern.ch/work/l/llunerti/private/CMSSW_10_2_17/src/13tevaod_new_/DsDsPATRun2/hnlAnalyzer_QCD_Pt-20to30_MuEnrichedPt5_tree.root"],
+
+	"signal"  	: ["/afs/cern.ch/work/l/llunerti/private/CMSSW_10_2_17/src/13tevaod_new_/DsDsPATRun2/hnlAnalyzer_BToNMuX_NToEMuPi_SoftQCD_b_mN1p5_ctau10p0mm_tree.root"],
+
+	"data"		: ["/afs/cern.ch/work/l/llunerti/private/CMSSW_10_2_17/src/13tevaod_new_/DsDsPATRun2/hnlAnalyzer_Run2018D_ParkingBPH1_tree.root"]
+}
