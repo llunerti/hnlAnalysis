@@ -8,7 +8,6 @@ process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '102X_upgrade2018_realistic_v21', '')## https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
-#process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Prompt_v15', '')## for 2018 D PROMPT RECO BPARKING
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
@@ -18,7 +17,6 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 
 inputFileName_list = [
-#'/store/data/Run2018D/ParkingBPH1/MINIAOD/05May2019promptD-v1/270000/4682963C-2EFF-FF4D-B234-8ED5973F70E4.root',
 '/store/mc/RunIIAutumn18MiniAOD/QCD_Pt-20to30_MuEnrichedPt5_TuneCP5_13TeV_pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v4/10000/CDB6209D-2C2B-E744-8732-23BDBAB58C99.root',
 #'/store/mc/RunIIAutumn18MiniAOD/QCD_Pt-15to20_MuEnrichedPt5_TuneCP5_13TeV_pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v3/100000/0BF89559-F5F7-4D41-A1B6-4037F80E9A4A.root',
 #'/store/mc/RunIIAutumn18MiniAOD/BToNMuX_NToEMuPi_SoftQCD_b_mN1p0_ctau10p0mm_TuneCP5_13TeV-pythia8-evtgen/MINIAODSIM/Custom_RDStar_BParking_102X_upgrade2018_realistic_v15-v2/260000/4C66BDE1-E0CE-7F46-963A-0E277B55ECDA.root',
@@ -46,16 +44,6 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-process.triggerSelection = cms.EDFilter("TriggerResultsFilter",
-                                        triggerConditions = cms.vstring('HLT_Mu7_IP4_*' ,'HLT_Mu7_IP5_*'  ,'HLT_Mu7_IP6_*',
-                                                                        'HLT_Mu8_IP4_*' ,'HLT_Mu8_IP5_*'  ,'HLT_Mu8_IP6_*',
-                                                                        'HLT_Mu9_IP4_*' ,'HLT_Mu9_IP5_*'  ,'HLT_Mu9_IP6_*',
-                                                                        'HLT_Mu12_IP4_*','HLT_Mu12_IP5_*' ,'HLT_Mu12_IP6_*'
-                                                                       ),
-                                        hltResults = cms.InputTag( "TriggerResults", "", "HLT" ),
-                                        l1tResults = cms.InputTag( "" ),
-                                        throw = cms.bool(False)
-                                        )
 process.demo = cms.EDAnalyzer('hnlAnalyzer_miniAOD',
                           HLTriggerResults     = cms.InputTag("TriggerResults", "", "HLT"),
                           HLTriggerObjects     = cms.InputTag("slimmedPatTrigger"),
