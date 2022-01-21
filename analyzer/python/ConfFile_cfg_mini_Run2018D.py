@@ -1,3 +1,6 @@
+import json
+from hnlAnalysis.analyzer.tools import *
+
 import FWCore.ParameterSet.Config as cms
 process = cms.Process("TEST")
 
@@ -13,23 +16,36 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
+max_events        = -1
+category          = "data"
+das_string        = "/ParkingBPH1/Run2018D-05May2019promptD-v1/MINIAOD"
+in_cfg_full_path  = "/afs/cern.ch/work/l/llunerti/private/CMSSW_10_2_27/src/hnlAnalysis/analyzer/cfg/miniAOD_input.json"
+out_cfg_full_path = "/afs/cern.ch/work/l/llunerti/private/CMSSW_10_2_27/src/hnlAnalysis/analyzer/cfg/hnl_tree_analyzer_cfg.json"
 
-inputFileName_list = [
-'/store/data/Run2018D/ParkingBPH1/MINIAOD/05May2019promptD-v1/270000/4682963C-2EFF-FF4D-B234-8ED5973F70E4.root',
-]
+#get metadata from input json file
+input_miniAOD_cfg = {}
+with open(in_cfg_full_path,'r') as f:
+    input_miniAOD_cfg = json.loads(f.read())
 
-dataset_name       = str()
-dataset_name_label = str()
+tot_events = 0
+inputFileName_list = []
 
-if inputFileName_list[0].split("/")[2] == "mc":
-    dataset_name = inputFileName_list[0].split("/")[4]
-    dataset_name_label = dataset_name[0:dataset_name.find("_TuneCP5")]
+#if max_events=-1 run on first file only
+if max_events<0:
+    file_name = input_miniAOD_cfg[category][das_string]["file_name_list"][0].encode('utf-8')
+    inputFileName_list = [file_name]
+    file_das_dict = json.loads(str(subprocess.check_output('dasgoclient --query='+file_name+' --json', shell=True)))
+    tot_events = int(file_das_dict[0]["file"][0]["nevents"])
+else:
+    tot_events = max_events
+    inputFileName_list = [item.encode('utf-8') for item in input_miniAOD_cfg[category][das_string]["file_name_list"]]
 
-elif inputFileName_list[0].split("/")[2] == "data":
-    dataset_name_label = inputFileName_list[0].split("/")[3] + "_" + inputFileName_list[0].split("/")[4] 
+outputFileName     = 'hnlAnalyzer_'+das_string.split("/")[1]+"_"+das_string.split("/")[2]+'_tree.root'
 
-outputFileName = 'hnlAnalyzer_'+dataset_name_label+'_tree.root'
+# write metadata in a json file
+update_json_cfg(category,das_string,outputFileName,input_miniAOD_cfg,out_cfg_full_path,tot_events)
+
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(max_events))
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(inputFileName_list
@@ -47,6 +63,7 @@ process.demo = cms.EDAnalyzer('hnlAnalyzer_miniAOD',
                           muons                = cms.InputTag("slimmedMuons"),
                           displacedMuons       = cms.InputTag("displacedStandAloneMuons"),
                           lostTracks           = cms.InputTag("lostTracks"),
+                          PUInfoTag            = cms.InputTag("slimmedAddPileupInfo"),
                           fileName             = cms.untracked.string(outputFileName),
                           useDisplacedMuons    = cms.untracked.bool(False)
                           )
