@@ -1,23 +1,3 @@
-// -*- C++ -*-
-//
-// Package:    XbFrame/hnlAnalyzer_miniAOD
-// Class:      hnlAnalyzer_miniAOD
-//
-/**\class hnlAnalyzer_miniAOD hnlAnalyzer_miniAOD.cc XbFrame/hnlAnalyzer_miniAOD/plugins/hnlAnalyzer_miniAOD.cc
-
- Description: Analyzer for b- or c-hadron reconstruction via RunII AOD datasets
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Sergey Polikarpov
-//         Created:  Tue, 15 Aug 2017 01:04:12 GMT
-//
-// For D_s+ --> phi pi+, phi --> mu+ mu-:
-//                   Kirill Ivanov
-//         Created:  Thu, 23 July 2020
-
 // system include files
 #include <memory>
 #include <ciso646> // and, or, not instead &&, ||, !
@@ -79,7 +59,7 @@
 #include "RecoVertex/VertexPrimitives/interface/BasicSingleVertexState.h"
 #include "RecoVertex/VertexPrimitives/interface/VertexState.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
-
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
 
 //// gen ??
@@ -137,52 +117,51 @@ private:
     edm::EDGetTokenT<reco::BeamSpot> thebeamspot_;
     edm::EDGetTokenT<reco::VertexCollection> vtxSample;
     edm::EDGetTokenT<std::vector<pat::PackedCandidate>> tracks_;
-    edm::EDGetTokenT<std::vector<pat::PackedCandidate>> lostTracks_;
+    //edm::EDGetTokenT<std::vector<pat::PackedCandidate>> lostTracks_;
     edm::EDGetTokenT<std::vector<pat::Muon>> muons_;
+    edm::EDGetTokenT<std::vector<PileupSummaryInfo>> PUInfoToken_;
 
     Int_t N_written_events;
 
     std::vector<float> *C_Hnl_vertex_prob;
     std::vector<float> *C_Hnl_mass;
     std::vector<float> *C_Hnl_preFit_mass;
-    std::vector<float> *C_Hnl_px          , *C_Hnl_py         , *C_Hnl_pz;
-    std::vector<float> *C_Hnl_vertex_x   , *C_Hnl_vertex_y  , *C_Hnl_vertex_z;
-    std::vector<float> *C_Hnl_vertex_xErr  , *C_Hnl_vertex_yErr , *C_Hnl_vertex_zErr;
+    std::vector<float> *C_Hnl_px, *C_Hnl_py, *C_Hnl_pz;
+    std::vector<float> *C_Hnl_vertex_x, *C_Hnl_vertex_y, *C_Hnl_vertex_z;
+    std::vector<float> *C_Hnl_vertex_xErr, *C_Hnl_vertex_yErr, *C_Hnl_vertex_zErr;
     std::vector<float> *C_Hnl_vertex_sig;
     std::vector<float> *C_Hnl_vertex_cos3D;
     std::vector<float> *C_Hnl_vertex_cos2D;
 
-    std::vector<float> *C_mu1_px        , *C_mu1_py       , *C_mu1_pz;
+    std::vector<float> *C_mu1_px, *C_mu1_py, *C_mu1_pz;
     std::vector<float> *C_mu1_eta;
-    std::vector<float> *C_mu1_ips_xy, *C_mu1_ips_z, *C_mu1_hit      , *C_mu1_pix;
+    std::vector<float> *C_mu1_ips_xy, *C_mu1_ips_z;
     std::vector<float> *C_mu1_ip_xy, *C_mu1_ip_z;
-    std::vector<int>   *C_mu1_isDisplaced;
     std::vector<int>   *C_mu1_charge;
     std::vector<int>   *C_mu1_isSoft;
     std::vector<int>   *C_mu1_isLoose;
     std::vector<int>   *C_mu1_isMedium;
 
-    std::vector<float> *C_mu2_px        , *C_mu2_py       , *C_mu2_pz;
+    std::vector<float> *C_mu2_px, *C_mu2_py, *C_mu2_pz;
     std::vector<float> *C_mu2_eta;
-    std::vector<float> *C_mu2_ips_xy       , *C_mu2_hit      , *C_mu2_pix;
+    std::vector<float> *C_mu2_ips_xy;
     std::vector<int>   *C_mu2_charge;
     std::vector<int>   *C_mu2_isSoft;
     std::vector<int>   *C_mu2_isLoose;
     std::vector<int>   *C_mu2_isMedium;
 
-    std::vector<float> *C_mass     , *C_vtxp;
+    std::vector<float> *C_mass, *C_vtxp;
     std::vector<int>   *C_pi_charge;
-    std::vector<float> *C_px       , *C_py        , *C_pz;
-    std::vector<float> *C_pi_px    , *C_pi_py     , *C_pi_pz;
+    std::vector<float> *C_px, *C_py, *C_pz;
+    std::vector<float> *C_pi_px, *C_pi_py, *C_pi_pz;
     std::vector<float> *C_pi_eta;
     std::vector<float> *C_pi_ips_xy, *C_pi_ips_z;
     std::vector<float> *C_pi_ip_xy, *C_pi_ip_z;
-    std::vector<float> *C_VtxX     , *C_VtxY      , *C_VtxZ;
-    std::vector<float> *C_VtxXE    , *C_VtxYE     , *C_VtxZE;
-    std::vector<int>   *C_pi_hit   , *C_pi_pix    , *C_pi_isDisplaced;
+    std::vector<float> *C_VtxX, *C_VtxY, *C_VtxZ;
+    std::vector<float> *C_VtxXE, *C_VtxYE, *C_VtxZE;
 
-    std::vector<float> *PV_x , *PV_y  , *PV_z;
-    std::vector<float> *PV_xErr , *PV_yErr  , *PV_zErr;
+    std::vector<float> *PV_x, *PV_y, *PV_z;
+    std::vector<float> *PV_xErr, *PV_yErr, *PV_zErr;
     std::vector<float> *PV_prob;
     std::vector<int>   *PV_dN;
 
@@ -222,7 +201,8 @@ private:
     Int_t event;
     Float_t lumi;
 
-    Int_t numPV;
+    Int_t nPV;
+    Int_t nPU_trueInt;
     Int_t numTrack;
     Int_t numMuon;
 
@@ -242,8 +222,9 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
         thebeamspot_      (consumes<reco::BeamSpot> (iConfig.getParameter<edm::InputTag>("beamSpotTag"))),
         vtxSample         (consumes<reco::VertexCollection> (iConfig.getParameter<edm::InputTag>("VtxSample"))),
         tracks_           (consumes<std::vector<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("Track"))),
-        lostTracks_       (consumes<std::vector<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("lostTracks"))),
+        //lostTracks_       (consumes<std::vector<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("lostTracks"))),
         muons_            (consumes<std::vector<pat::Muon>> (iConfig.getParameter<edm::InputTag>("muons"))),
+        PUInfoToken_      (consumes<std::vector<PileupSummaryInfo>> (iConfig.getParameter<edm::InputTag>("PUInfoTag"))),
 
         C_Hnl_vertex_prob(0),
         C_Hnl_mass(0),
@@ -267,11 +248,8 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
         C_mu1_eta(0),
         C_mu1_ips_xy(0),
         C_mu1_ips_z(0),
-        C_mu1_hit(0),
-        C_mu1_pix(0),
         C_mu1_ip_xy(0),
         C_mu1_ip_z(0),
-        C_mu1_isDisplaced(0),
         C_mu1_charge(0),
         C_mu1_isSoft(0),
         C_mu1_isLoose(0),
@@ -282,8 +260,6 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
         C_mu2_pz(0),
         C_mu2_eta(0),
         C_mu2_ips_xy(0),
-        C_mu2_hit(0),
-        C_mu2_pix(0),
         C_mu2_charge(0),
         C_mu2_isSoft(0),
         C_mu2_isLoose(0),
@@ -305,7 +281,6 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
         C_pi_ip_z(0),
         C_VtxX(0)      , C_VtxY(0)    , C_VtxZ(0),
         C_VtxXE(0)     , C_VtxYE(0)   , C_VtxZE(0),
-        C_pi_hit(0)    , C_pi_pix(0)  , C_pi_isDisplaced(0),
 
         PV_x(0)  , PV_y(0), PV_z(0),
         PV_xErr(0)  , PV_yErr(0), PV_zErr(0),
@@ -331,7 +306,8 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
         event(0),
         lumi(0),
 
-        numPV(0),
+        nPV(0),
+        nPU_trueInt(0),
         numTrack(0)
 {
     fileName = iConfig.getUntrackedParameter<std::string>("fileName","hnlAnalyzer_2018BPark-MiniAOD.root");
@@ -401,12 +377,27 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     edm::Handle<std::vector<pat::PackedCandidate> >thePATTrackHandle;
     iEvent.getByToken(tracks_, thePATTrackHandle);
 
-    edm::Handle<std::vector<pat::PackedCandidate> > thePATLostTracksHandle;
-    iEvent.getByToken(lostTracks_, thePATLostTracksHandle);
+    //edm::Handle<std::vector<pat::PackedCandidate> > thePATLostTracksHandle;
+    //iEvent.getByToken(lostTracks_, thePATLostTracksHandle);
 
-    numPV       = vertices.size();
-    numTrack    = thePATTrackHandle->size();
-    numMuon     = thePATMuonHandle->size();
+    edm::Handle<std::vector<PileupSummaryInfo>>  PupInfoHandle;
+    //iEvent.getByToken(PUInfoToken_, PupInfoHandle);
+
+    nPV      = vertices.size();
+    numTrack = thePATTrackHandle->size();
+    numMuon  = thePATMuonHandle->size();
+    
+    //if (run==1){
+    if (iEvent.getByToken(PUInfoToken_, PupInfoHandle)){
+        for (std::vector<PileupSummaryInfo>::const_iterator pui = PupInfoHandle->begin(); pui != PupInfoHandle->end(); ++pui){
+            int BX = pui->getBunchCrossing();
+            if(BX == 0) {
+                nPU_trueInt = pui->getTrueNumInteractions();
+            }
+        }
+    }
+    else
+        nPU_trueInt = -1;
 
     std::vector<std::string> TriggerPaths = {
       "HLT_Mu7_IP4_part*" ,// 0
@@ -424,9 +415,10 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     };
 
     unsigned int NTRIGGERS = (unsigned int)TriggerPaths.size();
-    std::vector<int> TriggerResults;
+    std::vector<short> TriggerResults;
 
-    unsigned short int TriggersFired[NTRIGGERS] = {};
+    //unsigned short int TriggersFired[NTRIGGERS] = {};
+    std::vector<short> TriggersFired(NTRIGGERS);
 
     if (triggerResults_handle.isValid())
     {
@@ -444,9 +436,8 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
             full_trigger_path = trigger_path_addPart + "_v" + std::to_string(version);
             unsigned int bit = TheTriggerNames.triggerIndex(edm::InputTag(full_trigger_path).label());
 
-            if (bit < triggerResults_handle->size() and triggerResults_handle->accept(bit) and not triggerResults_handle->error(bit)){
+            if (bit < triggerResults_handle->size() and triggerResults_handle->accept(bit) and not triggerResults_handle->error(bit))
               TriggersFired[i] = 1;
-            }
           }
         }
       }
@@ -461,17 +452,8 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     //float PM_sigma = 1.e-7;
     KinematicParticleFactoryFromTransientTrack pFactory;
 
-std::vector<pat::PackedCandidate> allTracks;
-allTracks.reserve(thePATTrackHandle->size() + thePATLostTracksHandle->size());
-allTracks.insert(allTracks.end(),thePATTrackHandle->begin(),thePATTrackHandle->end());
-allTracks.insert(allTracks.end(),thePATLostTracksHandle->begin(),thePATLostTracksHandle->end());
 
-      //for (std::vector<pat::PackedCandidate>::const_iterator iTrack1 = thePATTrackHandle->begin(); iTrack1 != thePATTrackHandle->end(); ++iTrack1)
-      //for (std::vector<pat::PackedCandidate>::const_iterator iTrack1 = allTracks.begin(); iTrack1 != allTracks.end(); ++iTrack1)
-      for (auto[iTrack1,trackColl_index] = std::tuple{std::vector<pat::PackedCandidate>::const_iterator{allTracks.begin()},0}; iTrack1!=allTracks.end(); ++iTrack1, ++trackColl_index){
-
-         bool isDisplacedTrack = false;
-         if (unsigned(trackColl_index)>(thePATTrackHandle->size()-1)) isDisplacedTrack = true;
+      for (std::vector<pat::PackedCandidate>::const_iterator iTrack1 = thePATTrackHandle->begin(); iTrack1 != thePATTrackHandle->end(); ++iTrack1){
 
          //Nota bene: if you want to use dxy or dz you need to be sure 
          //the pt of the tracks is bigger than 0.5 GeV, otherwise you 
@@ -483,7 +465,6 @@ allTracks.insert(allTracks.end(),thePATLostTracksHandle->begin(),thePATLostTrack
          if(iTrack1->charge()==0) continue;// NO neutral objects
          if(fabs(iTrack1->pdgId())!=211) continue;//Due to the lack of the particle ID all the tracks for cms are pions(ID==211)
          if(!(iTrack1->trackHighPurity())) continue; //displaced track are by default not high purity tracks in miniAOD
-         //if(!isDisplacedTrack && !(iTrack1->trackHighPurity())) continue; //displaced track are by default not high purity tracks in miniAOD
          
 
          bool hnl_pi_match = false;
@@ -504,7 +485,6 @@ allTracks.insert(allTracks.end(),thePATLostTracksHandle->begin(),thePATLostTrack
 
         for ( std::vector<pat::Muon>::const_iterator iMuon1 = thePATMuonHandle->begin(); iMuon1 != thePATMuonHandle->end(); ++iMuon1){
     
-            bool isDisplacedMuon = false;
             bool isSoftMuon1 = false;
             bool isLooseMuon1 = false;
             bool isMediumMuon1 = false;
@@ -744,7 +724,6 @@ allTracks.insert(allTracks.end(),thePATLostTracksHandle->begin(),thePATLostTrack
               C_mu1_ip_xy ->push_back(std::abs(glbTrackMu1->dxy(refitted_vertex_best.position())));
               C_mu1_ip_z  ->push_back(std::abs(glbTrackMu1->dz (refitted_vertex_best.position())));
               C_mu1_isHnlDaughter->push_back(hnl_mu_match ? 1 : 0);
-              C_mu1_isDisplaced ->push_back(isDisplacedMuon? 1: 0);
               C_mu1_charge->push_back(iMuon1->charge());
               C_mu1_isSoft   ->push_back(isSoftMuon1? 1: 0);
               C_mu1_isLoose  ->push_back(isLooseMuon1? 1: 0);
@@ -754,8 +733,6 @@ allTracks.insert(allTracks.end(),thePATLostTracksHandle->begin(),thePATLostTrack
               C_mu2_py ->push_back(p4mu2.Py());
               C_mu2_pz ->push_back(p4mu2.Pz());
               C_mu2_eta ->push_back(p4mu2.Eta());
-              C_mu2_hit ->push_back(glbTrackMu2->numberOfValidHits());
-              C_mu2_pix ->push_back(glbTrackMu2->hitPattern().numberOfValidPixelHits());
               C_mu2_ips_xy ->push_back(std::abs(glbTrackMu2->dxy(refitted_vertex_best.position()))/std::abs(glbTrackMu2->dxyError()));
               C_mu2_charge ->push_back(iMuon2->charge());
               C_mu2_isHnlBrother->push_back(is_hnl_brother ? 1 : 0);
@@ -768,13 +745,10 @@ allTracks.insert(allTracks.end(),thePATLostTracksHandle->begin(),thePATLostTrack
               C_pi_py ->push_back(p4pi1.Py());
               C_pi_pz ->push_back(p4pi1.Pz());
               C_pi_eta ->push_back(p4pi1.Eta());
-              C_pi_hit ->push_back(iTrack1->numberOfHits());
-              C_pi_pix ->push_back(iTrack1->numberOfPixelHits());
               C_pi_ips_xy ->push_back(std::abs(iTrack1->dxy(refitted_vertex_best.position()))/std::abs(iTrack1->dxyError()));
               C_pi_ips_z ->push_back(std::abs(iTrack1->dz(refitted_vertex_best.position()))/std::abs(iTrack1->dzError()));
               C_pi_ip_xy ->push_back(std::abs(iTrack1->dxy(refitted_vertex_best.position())));
               C_pi_ip_z  ->push_back(std::abs(iTrack1->dz (refitted_vertex_best.position())));
-              C_pi_isDisplaced->push_back(isDisplacedTrack? 1 : 0);
               C_pi_isHnlDaughter->push_back(hnl_pi_match ? 1 : 0);
 
               C_mass->push_back((p4mu1 + p4mu2 + p4pi1).M());
@@ -858,8 +832,6 @@ allTracks.insert(allTracks.end(),thePATLostTracksHandle->begin(),thePATLostTrack
     C_mu1_pz->clear();
     C_mu1_eta->clear();
     C_mu1_ips_xy->clear();
-    C_mu1_hit->clear();
-    C_mu1_pix->clear();
     C_mu1_ips_z->clear();
     C_mu1_ip_xy->clear();
     C_mu1_ip_xy->clear();
@@ -873,8 +845,6 @@ allTracks.insert(allTracks.end(),thePATLostTracksHandle->begin(),thePATLostTrack
     C_mu2_pz->clear();
     C_mu2_eta->clear();
     C_mu2_ips_xy->clear();
-    C_mu2_hit->clear();
-    C_mu2_pix->clear();
     C_mu2_charge->clear();
     C_mu2_isSoft->clear();
     C_mu2_isLoose->clear();
@@ -897,7 +867,6 @@ allTracks.insert(allTracks.end(),thePATLostTracksHandle->begin(),thePATLostTrack
 
     C_VtxX ->clear();      C_VtxY ->clear();      C_VtxZ ->clear();
     C_VtxXE->clear();      C_VtxYE->clear();      C_VtxZE->clear();
-    C_pi_hit->clear();     C_pi_pix->clear(); C_pi_isDisplaced->clear();
 
     PV_x->clear();   PV_y->clear();   PV_z->clear();
     PV_xErr->clear();   PV_yErr->clear();   PV_zErr->clear();
@@ -915,178 +884,170 @@ allTracks.insert(allTracks.end(),thePATLostTracksHandle->begin(),thePATLostTrack
 
     C_pi_isHnlDaughter->clear();
     C_mu1_isHnlDaughter->clear();
-    C_mu1_isDisplaced->clear();
     C_mu2_isHnlBrother->clear();
 
 
 }
 
 template <typename A,typename B> bool hnlAnalyzer_miniAOD::IsTheSame(const A& cand1, const B& cand2){
-    double deltaPt  = std::abs(cand1.pt()-cand2.pt());
-    double deltaEta = cand1.eta()-cand2.eta();
+	double deltaPt  = std::abs(cand1.pt()-cand2.pt());
+	double deltaEta = cand1.eta()-cand2.eta();
 
-    auto deltaPhi = std::abs(cand1.phi() - cand2.phi());
-    if (deltaPhi > float(M_PI))
-      deltaPhi -= float(2 * M_PI);
-    double deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
-    if(deltaR<0.1 && deltaPt<0.1) return true;
-    else return false;
+	auto deltaPhi = std::abs(cand1.phi() - cand2.phi());
+	if (deltaPhi > float(M_PI))
+		deltaPhi -= float(2 * M_PI);
+	double deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
+	if(deltaR<0.1 && deltaPt<0.1) return true;
+	else return false;
 }
 
 int hnlAnalyzer_miniAOD::getMatchedGenPartIdx(double pt, double eta, double phi, int pdg_id, std::vector<pat::PackedGenParticle> packedGen_particles){
-  int matchedIndex = -9999;
+	int matchedIndex = -9999;
 
-  for(unsigned i=0; i<packedGen_particles.size(); ++i){
-    pat::PackedGenParticle gen_particle = packedGen_particles.at(i);
-    if (std::abs(gen_particle.pdgId()) != pdg_id) continue;
-    double gen_pt  = gen_particle.pt();
-    double gen_eta = gen_particle.eta();
-    double gen_phi = gen_particle.phi();
+	for(unsigned i=0; i<packedGen_particles.size(); ++i){
+		pat::PackedGenParticle gen_particle = packedGen_particles.at(i);
+		if (std::abs(gen_particle.pdgId()) != pdg_id) continue;
+		double gen_pt  = gen_particle.pt();
+		double gen_eta = gen_particle.eta();
+		double gen_phi = gen_particle.phi();
 
-    double deltaPt  = std::abs(pt-gen_pt);
-    double deltaEta = eta-gen_eta;
+		double deltaPt  = std::abs(pt-gen_pt);
+		double deltaEta = eta-gen_eta;
 
-    auto deltaPhi = std::abs(phi - gen_phi);
-    if (deltaPhi > float(M_PI))
-      deltaPhi -= float(2 * M_PI);
+		auto deltaPhi = std::abs(phi - gen_phi);
+		if (deltaPhi > float(M_PI))
+			deltaPhi -= float(2 * M_PI);
 
-    double deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
-    if (deltaPt<0.5 && deltaR<0.5) {
-      matchedIndex = i;
-      break;
-    }
-  }
-  
-  return matchedIndex;  
+		double deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
+		if (deltaPt<0.5 && deltaR<0.5) {
+			matchedIndex = i;
+			break;
+		}
+	}
+
+	return matchedIndex;  
 }
 
 
 // ------------ method called once each job just before starting event loop  ------------
 void hnlAnalyzer_miniAOD::beginJob()
 {
-    using namespace std;
-    using namespace reco;
-//
-    cout << "------------------------------->>>>> Begin Job" << endl;
+	using namespace std;
+	using namespace reco;
+	//
+	cout << "------------------------------->>>>> Begin Job" << endl;
 
-    f = new TFile(fileName.c_str(), "RECREATE");
-    wwtree  = new TTree("wztree", "muons tree");
+	f = new TFile(fileName.c_str(), "RECREATE");
+	wwtree  = new TTree("wztree", "muons tree");
 
-    wwtree->Branch("nCand"              , &nCand            , "nCand/I"     );
+	wwtree->Branch("nCand"              , &nCand            , "nCand/I"     );
 
-    wwtree->Branch("run"                , &run              , "run/I"       );
-    wwtree->Branch("event"              , &event            , "event/I"     );
-    wwtree->Branch("lumi"               , &lumi             , "lumi/F"      );
+	wwtree->Branch("run"                , &run              , "run/I"       );
+	wwtree->Branch("event"              , &event            , "event/I"     );
+	wwtree->Branch("lumi"               , &lumi             , "lumi/F"      );
 
-    wwtree->Branch("numPV"              , &numPV            , "numPV/I"     );
-    wwtree->Branch("numTrack"           , &numTrack         , "numTrack/I"  );
+	wwtree->Branch("nPV"              , &nPV            , "nPV/I"     );
+	wwtree->Branch("nPU_trueInt"      , &nPU_trueInt    , "nPU_trueInt/I");
+	wwtree->Branch("numTrack"           , &numTrack         , "numTrack/I"  );
 
-    wwtree->Branch("C_Hnl_vertex_prob", &C_Hnl_vertex_prob);
-    wwtree->Branch("C_Hnl_mass", &C_Hnl_mass);
-    wwtree->Branch("C_Hnl_preFit_mass", &C_Hnl_preFit_mass);
-    wwtree->Branch("C_Hnl_px", &C_Hnl_px);
-    wwtree->Branch("C_Hnl_py", &C_Hnl_py);
-    wwtree->Branch("C_Hnl_pz", &C_Hnl_pz);
-    wwtree->Branch("C_Hnl_vertex_x" , &C_Hnl_vertex_x);
-    wwtree->Branch("C_Hnl_vertex_y" , &C_Hnl_vertex_y);
-    wwtree->Branch("C_Hnl_vertex_z" , &C_Hnl_vertex_z);
-    wwtree->Branch("C_Hnl_vertex_xErr" , &C_Hnl_vertex_xErr);
-    wwtree->Branch("C_Hnl_vertex_yErr" , &C_Hnl_vertex_yErr);
-    wwtree->Branch("C_Hnl_vertex_zErr" , &C_Hnl_vertex_zErr);
-    wwtree->Branch("C_Hnl_vertex_sig" , &C_Hnl_vertex_sig);
-    wwtree->Branch("C_Hnl_vertex_cos3D" , &C_Hnl_vertex_cos3D);
-    wwtree->Branch("C_Hnl_vertex_cos2D" , &C_Hnl_vertex_cos2D);
+	wwtree->Branch("C_Hnl_vertex_prob", &C_Hnl_vertex_prob);
+	wwtree->Branch("C_Hnl_mass", &C_Hnl_mass);
+	wwtree->Branch("C_Hnl_preFit_mass", &C_Hnl_preFit_mass);
+	wwtree->Branch("C_Hnl_px", &C_Hnl_px);
+	wwtree->Branch("C_Hnl_py", &C_Hnl_py);
+	wwtree->Branch("C_Hnl_pz", &C_Hnl_pz);
+	wwtree->Branch("C_Hnl_vertex_x" , &C_Hnl_vertex_x);
+        wwtree->Branch("C_Hnl_vertex_y" , &C_Hnl_vertex_y);
+        wwtree->Branch("C_Hnl_vertex_z" , &C_Hnl_vertex_z);
+        wwtree->Branch("C_Hnl_vertex_xErr" , &C_Hnl_vertex_xErr);
+        wwtree->Branch("C_Hnl_vertex_yErr" , &C_Hnl_vertex_yErr);
+        wwtree->Branch("C_Hnl_vertex_zErr" , &C_Hnl_vertex_zErr);
+        wwtree->Branch("C_Hnl_vertex_sig" , &C_Hnl_vertex_sig);
+        wwtree->Branch("C_Hnl_vertex_cos3D" , &C_Hnl_vertex_cos3D);
+        wwtree->Branch("C_Hnl_vertex_cos2D" , &C_Hnl_vertex_cos2D);
 
-    wwtree->Branch("C_mu1_px"    , &C_mu1_px);
-    wwtree->Branch("C_mu1_py"    , &C_mu1_py);
-    wwtree->Branch("C_mu1_pz"    , &C_mu1_pz);
-    wwtree->Branch("C_mu1_eta"   , &C_mu1_eta);
-    wwtree->Branch("C_mu1_ips_xy", &C_mu1_ips_xy);
-    wwtree->Branch("C_mu1_ips_z" , &C_mu1_ips_z);
-    wwtree->Branch("C_mu1_ip_xy" , &C_mu1_ip_xy);
-    wwtree->Branch("C_mu1_ip_z"  , &C_mu1_ip_z);
-    wwtree->Branch("C_mu1_hit"   , &C_mu1_hit);
-    wwtree->Branch("C_mu1_pix"   , &C_mu1_pix);
-    wwtree->Branch("C_mu1_charge", &C_mu1_charge);
-    wwtree->Branch("C_mu1_isSoft", &C_mu1_isSoft);
-    wwtree->Branch("C_mu1_isLoose", &C_mu1_isLoose);
-    wwtree->Branch("C_mu1_isMedium", &C_mu1_isMedium);
+        wwtree->Branch("C_mu1_px"    , &C_mu1_px);
+        wwtree->Branch("C_mu1_py"    , &C_mu1_py);
+        wwtree->Branch("C_mu1_pz"    , &C_mu1_pz);
+        wwtree->Branch("C_mu1_eta"   , &C_mu1_eta);
+        wwtree->Branch("C_mu1_ips_xy", &C_mu1_ips_xy);
+        wwtree->Branch("C_mu1_ips_z" , &C_mu1_ips_z);
+        wwtree->Branch("C_mu1_ip_xy" , &C_mu1_ip_xy);
+        wwtree->Branch("C_mu1_ip_z"  , &C_mu1_ip_z);
+        wwtree->Branch("C_mu1_charge", &C_mu1_charge);
+        wwtree->Branch("C_mu1_isSoft", &C_mu1_isSoft);
+        wwtree->Branch("C_mu1_isLoose", &C_mu1_isLoose);
+        wwtree->Branch("C_mu1_isMedium", &C_mu1_isMedium);
 
-    wwtree->Branch("C_mu2_px"    , &C_mu2_px);
-    wwtree->Branch("C_mu2_py"    , &C_mu2_py);
-    wwtree->Branch("C_mu2_pz"    , &C_mu2_pz);
-    wwtree->Branch("C_mu2_eta"   , &C_mu2_eta);
-    wwtree->Branch("C_mu2_ips_xy", &C_mu2_ips_xy);
-    wwtree->Branch("C_mu2_hit"   , &C_mu2_hit);
-    wwtree->Branch("C_mu2_pix"   , &C_mu2_pix);
-    wwtree->Branch("C_mu2_charge", &C_mu2_charge);
-    wwtree->Branch("C_mu2_isSoft", &C_mu2_isSoft);
-    wwtree->Branch("C_mu2_isLoose", &C_mu2_isLoose);
-    wwtree->Branch("C_mu2_isMedium", &C_mu2_isMedium);
+        wwtree->Branch("C_mu2_px"    , &C_mu2_px);
+        wwtree->Branch("C_mu2_py"    , &C_mu2_py);
+        wwtree->Branch("C_mu2_pz"    , &C_mu2_pz);
+        wwtree->Branch("C_mu2_eta"   , &C_mu2_eta);
+        wwtree->Branch("C_mu2_ips_xy", &C_mu2_ips_xy);
+        wwtree->Branch("C_mu2_charge", &C_mu2_charge);
+        wwtree->Branch("C_mu2_isSoft", &C_mu2_isSoft);
+        wwtree->Branch("C_mu2_isLoose", &C_mu2_isLoose);
+        wwtree->Branch("C_mu2_isMedium", &C_mu2_isMedium);
 
-    wwtree->Branch("C_mass"            , &C_mass          );
-    wwtree->Branch("C_vtxp"            , &C_vtxp          );
-    wwtree->Branch("C_pi_charge"       , &C_pi_charge     );
-    wwtree->Branch("C_px"              , &C_px            );
-    wwtree->Branch("C_py"              , &C_py            );
-    wwtree->Branch("C_pz"              , &C_pz            );
-    wwtree->Branch("C_pi_px"           , &C_pi_px         );
-    wwtree->Branch("C_pi_py"           , &C_pi_py         );
-    wwtree->Branch("C_pi_pz"           , &C_pi_pz         );
-    wwtree->Branch("C_pi_eta"          , &C_pi_eta        );
-    wwtree->Branch("C_pi_ips_xy"       , &C_pi_ips_xy     );
-    wwtree->Branch("C_pi_ips_z"        , &C_pi_ips_z     );
-    wwtree->Branch("C_pi_ip_xy"        , &C_pi_ip_xy     );
-    wwtree->Branch("C_pi_ip_z"         , &C_pi_ip_z     );
-    wwtree->Branch("C_VtxX"            , &C_VtxX          );
-    wwtree->Branch("C_VtxY"            , &C_VtxY          );
-    wwtree->Branch("C_VtxZ"            , &C_VtxZ          );
-    wwtree->Branch("C_VtxXE"           , &C_VtxXE         );
-    wwtree->Branch("C_VtxYE"           , &C_VtxYE         );
-    wwtree->Branch("C_VtxZE"           , &C_VtxZE         );
-    wwtree->Branch("C_pi_hit"          , &C_pi_hit        );
-    wwtree->Branch("C_pi_pix"          , &C_pi_pix        );
-    wwtree->Branch("C_pi_isDisplaced"  , &C_pi_isDisplaced);
+        wwtree->Branch("C_mass"            , &C_mass          );
+        wwtree->Branch("C_vtxp"            , &C_vtxp          );
+        wwtree->Branch("C_pi_charge"       , &C_pi_charge     );
+        wwtree->Branch("C_px"              , &C_px            );
+        wwtree->Branch("C_py"              , &C_py            );
+        wwtree->Branch("C_pz"              , &C_pz            );
+        wwtree->Branch("C_pi_px"           , &C_pi_px         );
+        wwtree->Branch("C_pi_py"           , &C_pi_py         );
+        wwtree->Branch("C_pi_pz"           , &C_pi_pz         );
+        wwtree->Branch("C_pi_eta"          , &C_pi_eta        );
+        wwtree->Branch("C_pi_ips_xy"       , &C_pi_ips_xy     );
+        wwtree->Branch("C_pi_ips_z"        , &C_pi_ips_z     );
+        wwtree->Branch("C_pi_ip_xy"        , &C_pi_ip_xy     );
+        wwtree->Branch("C_pi_ip_z"         , &C_pi_ip_z     );
+        wwtree->Branch("C_VtxX"            , &C_VtxX          );
+        wwtree->Branch("C_VtxY"            , &C_VtxY          );
+        wwtree->Branch("C_VtxZ"            , &C_VtxZ          );
+        wwtree->Branch("C_VtxXE"           , &C_VtxXE         );
+        wwtree->Branch("C_VtxYE"           , &C_VtxYE         );
+        wwtree->Branch("C_VtxZE"           , &C_VtxZE         );
 
-    wwtree->Branch("PV_x"    , &PV_x);
-    wwtree->Branch("PV_y"    , &PV_y);
-    wwtree->Branch("PV_z"    , &PV_z);
-    wwtree->Branch("PV_xErr" , &PV_xErr);
-    wwtree->Branch("PV_yErr" , &PV_yErr);
-    wwtree->Branch("PV_zErr" , &PV_zErr);
-    wwtree->Branch("PV_prob" , &PV_prob);
-    wwtree->Branch("PV_dN"   , &PV_dN);
+        wwtree->Branch("PV_x"    , &PV_x);
+        wwtree->Branch("PV_y"    , &PV_y);
+        wwtree->Branch("PV_z"    , &PV_z);
+        wwtree->Branch("PV_xErr" , &PV_xErr);
+        wwtree->Branch("PV_yErr" , &PV_yErr);
+        wwtree->Branch("PV_zErr" , &PV_zErr);
+        wwtree->Branch("PV_prob" , &PV_prob);
+        wwtree->Branch("PV_dN"   , &PV_dN);
 
-    wwtree->Branch("mu7_ip4_matched" , &mu7_ip4_matched );
-    wwtree->Branch("mu7_ip5_matched" , &mu7_ip5_matched );
-    wwtree->Branch("mu7_ip6_matched" , &mu7_ip6_matched );
-    wwtree->Branch("mu8_ip4_matched" , &mu8_ip4_matched );
-    wwtree->Branch("mu8_ip5_matched" , &mu8_ip5_matched );
-    wwtree->Branch("mu8_ip6_matched" , &mu8_ip6_matched );
-    wwtree->Branch("mu9_ip4_matched" , &mu9_ip4_matched );
-    wwtree->Branch("mu9_ip5_matched" , &mu9_ip5_matched );
-    wwtree->Branch("mu9_ip6_matched" , &mu9_ip6_matched );
-    wwtree->Branch("mu12_ip4_matched", &mu12_ip4_matched);
-    wwtree->Branch("mu12_ip5_matched", &mu12_ip5_matched);
-    wwtree->Branch("mu12_ip6_matched", &mu12_ip6_matched);
+        wwtree->Branch("mu7_ip4_matched" , &mu7_ip4_matched );
+        wwtree->Branch("mu7_ip5_matched" , &mu7_ip5_matched );
+        wwtree->Branch("mu7_ip6_matched" , &mu7_ip6_matched );
+        wwtree->Branch("mu8_ip4_matched" , &mu8_ip4_matched );
+        wwtree->Branch("mu8_ip5_matched" , &mu8_ip5_matched );
+        wwtree->Branch("mu8_ip6_matched" , &mu8_ip6_matched );
+        wwtree->Branch("mu9_ip4_matched" , &mu9_ip4_matched );
+        wwtree->Branch("mu9_ip5_matched" , &mu9_ip5_matched );
+        wwtree->Branch("mu9_ip6_matched" , &mu9_ip6_matched );
+        wwtree->Branch("mu12_ip4_matched", &mu12_ip4_matched);
+        wwtree->Branch("mu12_ip5_matched", &mu12_ip5_matched);
+        wwtree->Branch("mu12_ip6_matched", &mu12_ip6_matched);
 
-    wwtree->Branch("mu7_ip4_fired" , &mu7_ip4_fired);
-    wwtree->Branch("mu7_ip5_fired" , &mu7_ip5_fired);
-    wwtree->Branch("mu7_ip6_fired" , &mu7_ip6_fired);
-    wwtree->Branch("mu8_ip4_fired" , &mu8_ip4_fired);
-    wwtree->Branch("mu8_ip5_fired" , &mu8_ip5_fired);
-    wwtree->Branch("mu8_ip6_fired" , &mu8_ip6_fired);
-    wwtree->Branch("mu9_ip4_fired" , &mu9_ip4_fired);
-    wwtree->Branch("mu9_ip5_fired" , &mu9_ip5_fired);
-    wwtree->Branch("mu9_ip6_fired" , &mu9_ip6_fired);
-    wwtree->Branch("mu12_ip4_fired", &mu12_ip4_fired);
-    wwtree->Branch("mu12_ip5_fired", &mu12_ip5_fired);
-    wwtree->Branch("mu12_ip6_fired", &mu12_ip6_fired);
+        wwtree->Branch("mu7_ip4_fired" , &mu7_ip4_fired);
+        wwtree->Branch("mu7_ip5_fired" , &mu7_ip5_fired);
+        wwtree->Branch("mu7_ip6_fired" , &mu7_ip6_fired);
+        wwtree->Branch("mu8_ip4_fired" , &mu8_ip4_fired);
+        wwtree->Branch("mu8_ip5_fired" , &mu8_ip5_fired);
+        wwtree->Branch("mu8_ip6_fired" , &mu8_ip6_fired);
+        wwtree->Branch("mu9_ip4_fired" , &mu9_ip4_fired);
+        wwtree->Branch("mu9_ip5_fired" , &mu9_ip5_fired);
+        wwtree->Branch("mu9_ip6_fired" , &mu9_ip6_fired);
+        wwtree->Branch("mu12_ip4_fired", &mu12_ip4_fired);
+        wwtree->Branch("mu12_ip5_fired", &mu12_ip5_fired);
+        wwtree->Branch("mu12_ip6_fired", &mu12_ip6_fired);
 
-    wwtree->Branch("C_pi_isHnlDaughter"        , &C_pi_isHnlDaughter        );
-    wwtree->Branch("C_mu1_isHnlDaughter"        , &C_mu1_isHnlDaughter        );
-    wwtree->Branch("C_mu1_isDisplaced"        , &C_mu1_isDisplaced        );
-    wwtree->Branch("C_mu2_isHnlBrother"        , &C_mu2_isHnlBrother        );
+        wwtree->Branch("C_pi_isHnlDaughter"        , &C_pi_isHnlDaughter        );
+        wwtree->Branch("C_mu1_isHnlDaughter"        , &C_mu1_isHnlDaughter        );
+        wwtree->Branch("C_mu2_isHnlBrother"        , &C_mu2_isHnlBrother        );
 
 }
 
