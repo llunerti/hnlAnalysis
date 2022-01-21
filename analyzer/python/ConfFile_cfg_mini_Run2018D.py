@@ -20,7 +20,7 @@ max_events        = -1
 category          = "data"
 das_string        = "/ParkingBPH1/Run2018D-05May2019promptD-v1/MINIAOD"
 in_cfg_full_path  = "/afs/cern.ch/work/l/llunerti/private/CMSSW_10_2_27/src/hnlAnalysis/analyzer/cfg/miniAOD_input.json"
-out_cfg_full_path = "/afs/cern.ch/work/l/llunerti/private/CMSSW_10_2_27/src/hnlAnalysis/analyzer/cfg/hnl_tree_analyzer_cfg.json"
+out_cfg_full_path = "/afs/cern.ch/work/l/llunerti/private/hnlTreeAnalyzer/cfg/hnl_tree_input.json"
 
 #get metadata from input json file
 input_miniAOD_cfg = {}
