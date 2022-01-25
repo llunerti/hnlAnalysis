@@ -150,15 +150,14 @@ private:
     std::vector<int>   *C_mu2_isLoose;
     std::vector<int>   *C_mu2_isMedium;
 
-    std::vector<float> *C_mass, *C_vtxp;
+    std::vector<float> *C_mass;
+    std::vector<float> *C_mu1mu2_mass;
     std::vector<int>   *C_pi_charge;
     std::vector<float> *C_px, *C_py, *C_pz;
     std::vector<float> *C_pi_px, *C_pi_py, *C_pi_pz;
     std::vector<float> *C_pi_eta;
     std::vector<float> *C_pi_ips_xy, *C_pi_ips_z;
     std::vector<float> *C_pi_ip_xy, *C_pi_ip_z;
-    std::vector<float> *C_VtxX, *C_VtxY, *C_VtxZ;
-    std::vector<float> *C_VtxXE, *C_VtxYE, *C_VtxZE;
 
     std::vector<float> *PV_x, *PV_y, *PV_z;
     std::vector<float> *PV_xErr, *PV_yErr, *PV_zErr;
@@ -177,6 +176,19 @@ private:
     std::vector<short>  *mu12_ip4_matched;
     std::vector<short>  *mu12_ip5_matched;
     std::vector<short>  *mu12_ip6_matched;
+
+    std::vector<short>  *mu7_ip4_matched_lastAcc;
+    std::vector<short>  *mu7_ip5_matched_lastAcc;
+    std::vector<short>  *mu7_ip6_matched_lastAcc;
+    std::vector<short>  *mu8_ip4_matched_lastAcc;
+    std::vector<short>  *mu8_ip5_matched_lastAcc;
+    std::vector<short>  *mu8_ip6_matched_lastAcc;
+    std::vector<short>  *mu9_ip4_matched_lastAcc;
+    std::vector<short>  *mu9_ip5_matched_lastAcc;
+    std::vector<short>  *mu9_ip6_matched_lastAcc;
+    std::vector<short>  *mu12_ip4_matched_lastAcc;
+    std::vector<short>  *mu12_ip5_matched_lastAcc;
+    std::vector<short>  *mu12_ip6_matched_lastAcc;
 
     std::vector<short>  *mu7_ip4_fired;
     std::vector<short>  *mu7_ip5_fired;
@@ -266,7 +278,7 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
         C_mu2_isMedium(0),
 
         C_mass(0),
-        C_vtxp(0),
+        C_mu1mu2_mass(0),
         C_pi_charge(0),
         C_px(0),
         C_py(0),
@@ -279,8 +291,6 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
         C_pi_ips_z(0),
         C_pi_ip_xy(0),
         C_pi_ip_z(0),
-        C_VtxX(0)      , C_VtxY(0)    , C_VtxZ(0),
-        C_VtxXE(0)     , C_VtxYE(0)   , C_VtxZE(0),
 
         PV_x(0)  , PV_y(0), PV_z(0),
         PV_xErr(0)  , PV_yErr(0), PV_zErr(0),
@@ -290,6 +300,11 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
         mu8_ip4_matched(0),    mu8_ip5_matched(0),    mu8_ip6_matched(0),
         mu9_ip4_matched(0),    mu9_ip5_matched(0),    mu9_ip6_matched(0),
         mu12_ip4_matched(0),    mu12_ip5_matched(0),   mu12_ip6_matched(0),
+
+        mu7_ip4_matched_lastAcc(0),    mu7_ip5_matched_lastAcc(0),    mu7_ip6_matched_lastAcc(0),
+        mu8_ip4_matched_lastAcc(0),    mu8_ip5_matched_lastAcc(0),    mu8_ip6_matched_lastAcc(0),
+        mu9_ip4_matched_lastAcc(0),    mu9_ip5_matched_lastAcc(0),    mu9_ip6_matched_lastAcc(0),
+        mu12_ip4_matched_lastAcc(0),    mu12_ip5_matched_lastAcc(0),   mu12_ip6_matched_lastAcc(0),
 
         mu7_ip4_fired(0),    mu7_ip5_fired(0),    mu7_ip6_fired(0),
         mu8_ip4_fired(0),    mu8_ip5_fired(0),    mu8_ip6_fired(0),
@@ -414,18 +429,18 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       "HLT_Mu12_IP6_part*" // 11
     };
 
-    unsigned int NTRIGGERS = (unsigned int)TriggerPaths.size();
-    std::vector<short> TriggerResults;
+    unsigned int nTrigPaths = (unsigned int)TriggerPaths.size();
 
-    //unsigned short int TriggersFired[NTRIGGERS] = {};
-    std::vector<short> TriggersFired(NTRIGGERS);
+    std::vector<short> TriggersFired(nTrigPaths);
+    std::vector<short> TriggerMatches(nTrigPaths);
+    std::vector<short> TriggerMatches_lastAcc(nTrigPaths);
 
     if (triggerResults_handle.isValid())
     {
       const edm::TriggerNames & TheTriggerNames = iEvent.triggerNames(*triggerResults_handle);
       std::vector<int> part_bpark = {0,1,2,3,4,5};
 
-      for(unsigned i=0; i<NTRIGGERS; ++i){
+      for(unsigned i=0; i<nTrigPaths; ++i){
         for (int part : part_bpark){
           std::string trigger_path = TriggerPaths.at(i).substr(0,TriggerPaths.at(i).find("*"));
           std::string trigger_path_addPart; 
@@ -436,7 +451,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
             full_trigger_path = trigger_path_addPart + "_v" + std::to_string(version);
             unsigned int bit = TheTriggerNames.triggerIndex(edm::InputTag(full_trigger_path).label());
 
-            if (bit < triggerResults_handle->size() and triggerResults_handle->accept(bit) and not triggerResults_handle->error(bit))
+            if ((bit < triggerResults_handle->size()) && (triggerResults_handle->accept(bit)) && (!triggerResults_handle->error(bit)))
               TriggersFired[i] = 1;
           }
         }
@@ -506,12 +521,12 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	    TransientTrack pion1TT((*theB).build(iTrack1->pseudoTrack()));
             //
          
-            if(not muon1TT.isValid()) continue;
-            if(not pion1TT.isValid()) continue;
+            if(!muon1TT.isValid()) continue;
+            if(!pion1TT.isValid()) continue;
             if(muon1TT == pion1TT) continue;
             if(iMuon1->pt() < 3.0) continue;
             if(fabs(iMuon1->eta()) > 2.4)  continue;
-            if(not (glbTrackMu1->quality(reco::TrackBase::highPurity)))  continue; //quality
+            if(!(glbTrackMu1->quality(reco::TrackBase::highPurity)))  continue; //quality
         
 
             TLorentzVector p4mu1,p4pi1;
@@ -540,7 +555,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
             if (fitgood == 0) continue;
       
 
-            if (not hnlToPiMu_kinTree->isValid()) continue;
+            if (!hnlToPiMu_kinTree->isValid()) continue;
             //
             hnlToPiMu_kinTree->movePointerToTheTop();
             RefCountedKinematicParticle muPi_particle = hnlToPiMu_kinTree->currentParticle();
@@ -589,13 +604,13 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
               if (iMuon2->isMediumMuon())          isMediumMuon2=true;
 
      
-              if(iMuon2->pt() < 3.0) continue;
-              if(fabs(iMuon2->eta()) > 2.4)  continue;
+              if(iMuon2->pt() < 5.0) continue;
+              if(fabs(iMuon2->eta()) > 1.7)  continue;
 
               TrackRef glbTrackMu2;
               glbTrackMu2 = iMuon2->track();
               if( glbTrackMu2.isNull())  continue;
-              if(not (glbTrackMu2->quality(reco::TrackBase::highPurity)))  continue; //quality
+              if(!(glbTrackMu2->quality(reco::TrackBase::highPurity)))  continue; //quality
 
               TLorentzVector p4mu2;
               p4mu2.SetPtEtaPhiM(iMuon2->pt(), iMuon2->eta(), iMuon2->phi(), pdg.PDG_MUON_MASS);
@@ -622,11 +637,15 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
                 }
               }
 
-              for (unsigned int i = 0; i < NTRIGGERS; i++) {
-                  int trigger_tmp = 0;
+              for (unsigned i = 0; i < nTrigPaths; ++i) {
+                  short trigger_match = 0;
+                  short trigger_match_lastAcc = 0;
 
-                  if(iMuon2->triggerObjectMatchByPath(TriggerPaths[i])!=nullptr) trigger_tmp = 1;
-                  TriggerResults.push_back(trigger_tmp);
+                  if(iMuon2->triggerObjectMatchByPath(TriggerPaths[i])!=nullptr) trigger_match = 1;
+                  if(iMuon2->triggerObjectMatchByPath(TriggerPaths[i],true,true)!=nullptr) trigger_match_lastAcc = 1;
+
+                  TriggerMatches[i] = trigger_match;
+                  TriggerMatches_lastAcc[i] = trigger_match_lastAcc;
               }
 
               //Vertex refit
@@ -752,6 +771,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
               C_pi_isHnlDaughter->push_back(hnl_pi_match ? 1 : 0);
 
               C_mass->push_back((p4mu1 + p4mu2 + p4pi1).M());
+              C_mu1mu2_mass->push_back((p4mu1 + p4mu2).M());
               C_px ->push_back((p4mu1 + p4mu2 + p4pi1).Px());
               C_py ->push_back((p4mu1 + p4mu2 + p4pi1).Py());
               C_pz ->push_back((p4mu1 + p4mu2 + p4pi1).Pz());
@@ -765,18 +785,31 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
               PV_prob ->push_back(refittedVertex_prob);
               PV_dN ->push_back(refittedVertex_dN);
 
-              mu7_ip4_matched->push_back(TriggerResults[0]);
-              mu7_ip5_matched->push_back(TriggerResults[1]);
-              mu7_ip6_matched->push_back(TriggerResults[2]);
-              mu8_ip4_matched->push_back(TriggerResults[3]);
-              mu8_ip5_matched->push_back(TriggerResults[4]);
-              mu8_ip6_matched->push_back(TriggerResults[5]);
-              mu9_ip4_matched->push_back(TriggerResults[6]);
-              mu9_ip5_matched->push_back(TriggerResults[7]);
-              mu9_ip6_matched->push_back(TriggerResults[8]);
-              mu12_ip4_matched->push_back(TriggerResults[9]);
-              mu12_ip5_matched->push_back(TriggerResults[10]);
-              mu12_ip6_matched->push_back(TriggerResults[11]);
+              mu7_ip4_matched->push_back(TriggerMatches[0]);
+              mu7_ip5_matched->push_back(TriggerMatches[1]);
+              mu7_ip6_matched->push_back(TriggerMatches[2]);
+              mu8_ip4_matched->push_back(TriggerMatches[3]);
+              mu8_ip5_matched->push_back(TriggerMatches[4]);
+              mu8_ip6_matched->push_back(TriggerMatches[5]);
+              mu9_ip4_matched->push_back(TriggerMatches[6]);
+              mu9_ip5_matched->push_back(TriggerMatches[7]);
+              mu9_ip6_matched->push_back(TriggerMatches[8]);
+              mu12_ip4_matched->push_back(TriggerMatches[9]);
+              mu12_ip5_matched->push_back(TriggerMatches[10]);
+              mu12_ip6_matched->push_back(TriggerMatches[11]);
+
+              mu7_ip4_matched_lastAcc->push_back(TriggerMatches_lastAcc[0]);
+              mu7_ip5_matched_lastAcc->push_back(TriggerMatches_lastAcc[1]);
+              mu7_ip6_matched_lastAcc->push_back(TriggerMatches_lastAcc[2]);
+              mu8_ip4_matched_lastAcc->push_back(TriggerMatches_lastAcc[3]);
+              mu8_ip5_matched_lastAcc->push_back(TriggerMatches_lastAcc[4]);
+              mu8_ip6_matched_lastAcc->push_back(TriggerMatches_lastAcc[5]);
+              mu9_ip4_matched_lastAcc->push_back(TriggerMatches_lastAcc[6]);
+              mu9_ip5_matched_lastAcc->push_back(TriggerMatches_lastAcc[7]);
+              mu9_ip6_matched_lastAcc->push_back(TriggerMatches_lastAcc[8]);
+              mu12_ip4_matched_lastAcc->push_back(TriggerMatches_lastAcc[9]);
+              mu12_ip5_matched_lastAcc->push_back(TriggerMatches_lastAcc[10]);
+              mu12_ip6_matched_lastAcc->push_back(TriggerMatches_lastAcc[11]);
 
               mu7_ip4_fired->push_back(TriggersFired[0]);
               mu7_ip5_fired->push_back(TriggersFired[1]);
@@ -834,7 +867,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     C_mu1_ips_xy->clear();
     C_mu1_ips_z->clear();
     C_mu1_ip_xy->clear();
-    C_mu1_ip_xy->clear();
+    C_mu1_ip_z->clear();
     C_mu1_charge->clear();
     C_mu1_isSoft->clear();
     C_mu1_isLoose->clear();
@@ -851,7 +884,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     C_mu2_isMedium->clear();
 //
     C_mass->clear();
-    C_vtxp->clear();
+    C_mu1mu2_mass->clear();
     C_pi_charge->clear();
     C_px->clear();
     C_py->clear();
@@ -865,9 +898,6 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     C_pi_ip_xy->clear();
     C_pi_ip_z->clear();
 
-    C_VtxX ->clear();      C_VtxY ->clear();      C_VtxZ ->clear();
-    C_VtxXE->clear();      C_VtxYE->clear();      C_VtxZE->clear();
-
     PV_x->clear();   PV_y->clear();   PV_z->clear();
     PV_xErr->clear();   PV_yErr->clear();   PV_zErr->clear();
     PV_prob->clear();   PV_dN->clear();
@@ -876,6 +906,11 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     mu8_ip4_matched->clear();      mu8_ip5_matched->clear();      mu8_ip6_matched->clear();
     mu9_ip4_matched->clear();      mu9_ip5_matched->clear();      mu9_ip6_matched->clear();
     mu12_ip4_matched->clear();      mu12_ip5_matched->clear();     mu12_ip6_matched->clear();
+
+    mu7_ip4_matched_lastAcc->clear();      mu7_ip5_matched_lastAcc->clear();      mu7_ip6_matched_lastAcc->clear();
+    mu8_ip4_matched_lastAcc->clear();      mu8_ip5_matched_lastAcc->clear();      mu8_ip6_matched_lastAcc->clear();
+    mu9_ip4_matched_lastAcc->clear();      mu9_ip5_matched_lastAcc->clear();      mu9_ip6_matched_lastAcc->clear();
+    mu12_ip4_matched_lastAcc->clear();      mu12_ip5_matched_lastAcc->clear();     mu12_ip6_matched_lastAcc->clear();
 
     mu7_ip4_fired->clear();      mu7_ip5_fired->clear();      mu7_ip6_fired->clear();
     mu8_ip4_fired->clear();      mu8_ip5_fired->clear();      mu8_ip6_fired->clear();
@@ -990,7 +1025,7 @@ void hnlAnalyzer_miniAOD::beginJob()
         wwtree->Branch("C_mu2_isMedium", &C_mu2_isMedium);
 
         wwtree->Branch("C_mass"            , &C_mass          );
-        wwtree->Branch("C_vtxp"            , &C_vtxp          );
+        wwtree->Branch("C_mu1mu2_mass"     , &C_mu1mu2_mass   );
         wwtree->Branch("C_pi_charge"       , &C_pi_charge     );
         wwtree->Branch("C_px"              , &C_px            );
         wwtree->Branch("C_py"              , &C_py            );
@@ -1003,12 +1038,6 @@ void hnlAnalyzer_miniAOD::beginJob()
         wwtree->Branch("C_pi_ips_z"        , &C_pi_ips_z     );
         wwtree->Branch("C_pi_ip_xy"        , &C_pi_ip_xy     );
         wwtree->Branch("C_pi_ip_z"         , &C_pi_ip_z     );
-        wwtree->Branch("C_VtxX"            , &C_VtxX          );
-        wwtree->Branch("C_VtxY"            , &C_VtxY          );
-        wwtree->Branch("C_VtxZ"            , &C_VtxZ          );
-        wwtree->Branch("C_VtxXE"           , &C_VtxXE         );
-        wwtree->Branch("C_VtxYE"           , &C_VtxYE         );
-        wwtree->Branch("C_VtxZE"           , &C_VtxZE         );
 
         wwtree->Branch("PV_x"    , &PV_x);
         wwtree->Branch("PV_y"    , &PV_y);
@@ -1031,6 +1060,19 @@ void hnlAnalyzer_miniAOD::beginJob()
         wwtree->Branch("mu12_ip4_matched", &mu12_ip4_matched);
         wwtree->Branch("mu12_ip5_matched", &mu12_ip5_matched);
         wwtree->Branch("mu12_ip6_matched", &mu12_ip6_matched);
+
+        wwtree->Branch("mu7_ip4_matched_lastAcc" , &mu7_ip4_matched_lastAcc );
+        wwtree->Branch("mu7_ip5_matched_lastAcc" , &mu7_ip5_matched_lastAcc );
+        wwtree->Branch("mu7_ip6_matched_lastAcc" , &mu7_ip6_matched_lastAcc );
+        wwtree->Branch("mu8_ip4_matched_lastAcc" , &mu8_ip4_matched_lastAcc );
+        wwtree->Branch("mu8_ip5_matched_lastAcc" , &mu8_ip5_matched_lastAcc );
+        wwtree->Branch("mu8_ip6_matched_lastAcc" , &mu8_ip6_matched_lastAcc );
+        wwtree->Branch("mu9_ip4_matched_lastAcc" , &mu9_ip4_matched_lastAcc );
+        wwtree->Branch("mu9_ip5_matched_lastAcc" , &mu9_ip5_matched_lastAcc );
+        wwtree->Branch("mu9_ip6_matched_lastAcc" , &mu9_ip6_matched_lastAcc );
+        wwtree->Branch("mu12_ip4_matched_lastAcc", &mu12_ip4_matched_lastAcc);
+        wwtree->Branch("mu12_ip5_matched_lastAcc", &mu12_ip5_matched_lastAcc);
+        wwtree->Branch("mu12_ip6_matched_lastAcc", &mu12_ip6_matched_lastAcc);
 
         wwtree->Branch("mu7_ip4_fired" , &mu7_ip4_fired);
         wwtree->Branch("mu7_ip5_fired" , &mu7_ip5_fired);
