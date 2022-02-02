@@ -1,6 +1,7 @@
 import json
 from hnlAnalysis.analyzer.tools import *
 
+import FWCore.ParameterSet.VarParsing as VarParsing
 import FWCore.ParameterSet.Config as cms
 process = cms.Process("TEST")
 
@@ -16,39 +17,21 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 
-max_events        = -1
-category          = "data"
-das_string        = "/ParkingBPH1/Run2018D-05May2019promptD-v1/MINIAOD"
-in_cfg_full_path  = "/afs/cern.ch/work/l/llunerti/private/CMSSW_10_2_27/src/hnlAnalysis/analyzer/cfg/miniAOD_input.json"
-out_cfg_full_path = "/afs/cern.ch/work/l/llunerti/private/hnlTreeAnalyzer/cfg/hnl_tree_input.json"
+# setup 'analysis'  options
+options = VarParsing.VarParsing ('analysis')
 
-#get metadata from input json file
-input_miniAOD_cfg = {}
-with open(in_cfg_full_path,'r') as f:
-    input_miniAOD_cfg = json.loads(f.read())
+# setup any defaults you want
+options.inputFiles= '/store/data/Run2018D/ParkingBPH1/MINIAOD/05May2019promptD-v1/270000/4682963C-2EFF-FF4D-B234-8ED5973F70E4.root'
+options.outputFile = 'hnlAnalyzer_'+options.inputFiles[0].split("/")[3]+"_"+options.inputFiles[0].split("/")[4]+'_tree.root'
+options.maxEvents = 10
 
-tot_events = 0
-inputFileName_list = []
+# get and parse the command line arguments
+options.parseArguments()
 
-#if max_events=-1 run on first file only
-if max_events<0:
-    file_name = input_miniAOD_cfg[category][das_string]["file_name_list"][0].encode('utf-8')
-    inputFileName_list = [file_name]
-    file_das_dict = json.loads(str(subprocess.check_output('dasgoclient --query='+file_name+' --json', shell=True)))
-    tot_events = int(file_das_dict[0]["file"][0]["nevents"])
-else:
-    tot_events = max_events
-    inputFileName_list = [item.encode('utf-8') for item in input_miniAOD_cfg[category][das_string]["file_name_list"]]
-
-outputFileName     = 'hnlAnalyzer_'+das_string.split("/")[1]+"_"+das_string.split("/")[2]+'_tree.root'
-
-# write metadata in a json file
-update_json_cfg(category,das_string,outputFileName,input_miniAOD_cfg,out_cfg_full_path,tot_events)
-
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(max_events))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(inputFileName_list
+    fileNames = cms.untracked.vstring(options.inputFiles
     )
 )
 
@@ -64,12 +47,12 @@ process.demo = cms.EDAnalyzer('hnlAnalyzer_miniAOD',
                           displacedMuons       = cms.InputTag("displacedStandAloneMuons"),
                           lostTracks           = cms.InputTag("lostTracks"),
                           PUInfoTag            = cms.InputTag("slimmedAddPileupInfo"),
-                          fileName             = cms.untracked.string(outputFileName),
+                          fileName             = cms.untracked.string(options.outputFile),
                           useDisplacedMuons    = cms.untracked.bool(False)
                           )
 
 process.TFileService = cms.Service("TFileService",
-       fileName = cms.string(outputFileName)
+       fileName = cms.string(options.outputFile)
 )
 
 process.mySequence = cms.Sequence(process.demo)
