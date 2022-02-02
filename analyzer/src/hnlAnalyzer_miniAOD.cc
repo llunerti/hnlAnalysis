@@ -144,7 +144,8 @@ private:
 
     std::vector<float> *C_mu2_px, *C_mu2_py, *C_mu2_pz;
     std::vector<float> *C_mu2_eta;
-    std::vector<float> *C_mu2_ips_xy;
+    std::vector<float> *C_mu2_ips_xy, *C_mu2_ips_z;
+    std::vector<float> *C_mu2_ip_xy, *C_mu2_ip_z;
     std::vector<int>   *C_mu2_charge;
     std::vector<int>   *C_mu2_isSoft;
     std::vector<int>   *C_mu2_isLoose;
@@ -162,7 +163,7 @@ private:
     std::vector<float> *PV_x, *PV_y, *PV_z;
     std::vector<float> *PV_xErr, *PV_yErr, *PV_zErr;
     std::vector<float> *PV_prob;
-    std::vector<int>   *PV_dN;
+    //std::vector<int>   *PV_dN;
 
     std::vector<short>  *mu7_ip4_matched;
     std::vector<short>  *mu7_ip5_matched;
@@ -272,6 +273,9 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
         C_mu2_pz(0),
         C_mu2_eta(0),
         C_mu2_ips_xy(0),
+        C_mu2_ips_z(0),
+        C_mu2_ip_xy(0),
+        C_mu2_ip_z(0),
         C_mu2_charge(0),
         C_mu2_isSoft(0),
         C_mu2_isLoose(0),
@@ -294,7 +298,7 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
 
         PV_x(0)  , PV_y(0), PV_z(0),
         PV_xErr(0)  , PV_yErr(0), PV_zErr(0),
-        PV_prob(0)  , PV_dN(0),
+        PV_prob(0)  , //PV_dN(0),
 
         mu7_ip4_matched(0),    mu7_ip5_matched(0),    mu7_ip6_matched(0),
         mu8_ip4_matched(0),    mu8_ip5_matched(0),    mu8_ip6_matched(0),
@@ -649,8 +653,13 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
               }
 
               //Vertex refit
-              reco::Vertex refitted_vertex_best;
+              reco::Vertex refitted_vertex_best = thePrimaryV;
 
+             //Do not perfrorm vertex refit at the moment to help speed up the production
+             //Maybe it is not even needed
+             
+             
+             /*
               Double_t refittedVertex_x = -9999.; 
               Double_t refittedVertex_y = -9999.; 
               Double_t refittedVertex_z = -9999.; 
@@ -709,6 +718,26 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
                     refitted_vertex_best = refitted_vertex;
                 }
               }
+              */
+
+              //Vertex has not been refitted here!!
+              Double_t refittedVertex_x    = refitted_vertex_best.x();
+              Double_t refittedVertex_y    = refitted_vertex_best.y();
+              Double_t refittedVertex_z    = refitted_vertex_best.z();
+              Double_t refittedVertex_xErr = refitted_vertex_best.covariance(0, 0);
+              Double_t refittedVertex_yErr = refitted_vertex_best.covariance(1, 1);
+              Double_t refittedVertex_zErr = refitted_vertex_best.covariance(2, 2);
+              Double_t refittedVertex_prob = (TMath::Prob(refitted_vertex_best.chi2(), (int) refitted_vertex_best.ndof()));
+
+              //compute cos2D and cos3D wrt primary vertex (or beam spot?)
+              Double_t dx = muPi_vtx->position().x() - refitted_vertex_best.x();
+              Double_t dy = muPi_vtx->position().y() - refitted_vertex_best.y();
+              Double_t dz = muPi_vtx->position().z() - refitted_vertex_best.z();
+              Double_t px = muPi_particle->currentState().globalMomentum().x();
+              Double_t py = muPi_particle->currentState().globalMomentum().y();
+              Double_t pz = muPi_particle->currentState().globalMomentum().z();
+              Double_t cos3D_best = (px*dx + py*dy + pz*dz)/(sqrt(dx*dx + dy*dy + dz*dz)*muPi_particle->currentState().globalMomentum().mag());
+              Double_t cos2D_best = (px*dx + py*dy)/(sqrt(dx*dx + dy*dy)*sqrt(px*px + py*py));
 
               Double_t vx    = muPi_vtx->position().x();
               Double_t vy    = muPi_vtx->position().y();
@@ -738,10 +767,14 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
               C_mu1_py ->push_back(p4mu1.Py());
               C_mu1_pz ->push_back(p4mu1.Pz());
               C_mu1_eta ->push_back(p4mu1.Eta());
-              C_mu1_ips_xy ->push_back(std::abs(glbTrackMu1->dxy(refitted_vertex_best.position()))/std::abs(glbTrackMu1->dxyError()));
-              C_mu1_ips_z  ->push_back(std::abs(glbTrackMu1->dz (refitted_vertex_best.position()))/std::abs(glbTrackMu1->dzError()));
-              C_mu1_ip_xy ->push_back(std::abs(glbTrackMu1->dxy(refitted_vertex_best.position())));
-              C_mu1_ip_z  ->push_back(std::abs(glbTrackMu1->dz (refitted_vertex_best.position())));
+              //C_mu1_ips_xy ->push_back(std::abs(glbTrackMu1->dxy(refitted_vertex_best.position()))/std::abs(glbTrackMu1->dxyError()));
+              //C_mu1_ips_z  ->push_back(std::abs(glbTrackMu1->dz (refitted_vertex_best.position()))/std::abs(glbTrackMu1->dzError()));
+              //C_mu1_ip_xy ->push_back(std::abs(glbTrackMu1->dxy(refitted_vertex_best.position())));
+              //C_mu1_ip_z  ->push_back(std::abs(glbTrackMu1->dz (refitted_vertex_best.position())));
+              C_mu1_ips_xy ->push_back(iMuon1->dB(pat::Muon::PV2D)/iMuon1->edB(pat::Muon::PV2D));
+              C_mu1_ips_z  ->push_back(iMuon1->dB(pat::Muon::PV2D)/iMuon1->edB(pat::Muon::PV2D));
+              C_mu1_ip_xy  ->push_back(iMuon1->dB(pat::Muon::PV2D));
+              C_mu1_ip_z   ->push_back(iMuon1->dB(pat::Muon::PV2D));
               C_mu1_isHnlDaughter->push_back(hnl_mu_match ? 1 : 0);
               C_mu1_charge->push_back(iMuon1->charge());
               C_mu1_isSoft   ->push_back(isSoftMuon1? 1: 0);
@@ -752,7 +785,10 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
               C_mu2_py ->push_back(p4mu2.Py());
               C_mu2_pz ->push_back(p4mu2.Pz());
               C_mu2_eta ->push_back(p4mu2.Eta());
-              C_mu2_ips_xy ->push_back(std::abs(glbTrackMu2->dxy(refitted_vertex_best.position()))/std::abs(glbTrackMu2->dxyError()));
+              C_mu2_ips_xy ->push_back(iMuon2->dB(pat::Muon::PV2D)/iMuon2->edB(pat::Muon::PV2D));
+              C_mu2_ips_z  ->push_back(iMuon2->dB(pat::Muon::PV2D)/iMuon2->edB(pat::Muon::PV2D));
+              C_mu2_ip_xy  ->push_back(iMuon2->dB(pat::Muon::PV2D));
+              C_mu2_ip_z   ->push_back(iMuon2->dB(pat::Muon::PV2D));
               C_mu2_charge ->push_back(iMuon2->charge());
               C_mu2_isHnlBrother->push_back(is_hnl_brother ? 1 : 0);
               C_mu2_isSoft   ->push_back(isSoftMuon2? 1: 0);
@@ -764,10 +800,14 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
               C_pi_py ->push_back(p4pi1.Py());
               C_pi_pz ->push_back(p4pi1.Pz());
               C_pi_eta ->push_back(p4pi1.Eta());
-              C_pi_ips_xy ->push_back(std::abs(iTrack1->dxy(refitted_vertex_best.position()))/std::abs(iTrack1->dxyError()));
-              C_pi_ips_z ->push_back(std::abs(iTrack1->dz(refitted_vertex_best.position()))/std::abs(iTrack1->dzError()));
-              C_pi_ip_xy ->push_back(std::abs(iTrack1->dxy(refitted_vertex_best.position())));
-              C_pi_ip_z  ->push_back(std::abs(iTrack1->dz (refitted_vertex_best.position())));
+              //C_pi_ips_xy ->push_back(std::abs(iTrack1->dxy(refitted_vertex_best.position()))/std::abs(iTrack1->dxyError()));
+              //C_pi_ips_z ->push_back(std::abs(iTrack1->dz(refitted_vertex_best.position()))/std::abs(iTrack1->dzError()));
+              //C_pi_ip_xy ->push_back(std::abs(iTrack1->dxy(refitted_vertex_best.position())));
+              //C_pi_ip_z  ->push_back(std::abs(iTrack1->dz (refitted_vertex_best.position())));
+              C_pi_ips_xy->push_back(std::abs(iTrack1->dxy())/std::abs(iTrack1->dxyError()));
+              C_pi_ips_z ->push_back(std::abs(iTrack1->dz ())/std::abs(iTrack1->dzError()));
+              C_pi_ip_xy ->push_back(std::abs(iTrack1->dxy()));
+              C_pi_ip_z  ->push_back(std::abs(iTrack1->dz ()));
               C_pi_isHnlDaughter->push_back(hnl_pi_match ? 1 : 0);
 
               C_mass->push_back((p4mu1 + p4mu2 + p4pi1).M());
@@ -783,7 +823,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
               PV_yErr ->push_back(refittedVertex_yErr);
               PV_zErr ->push_back(refittedVertex_zErr);
               PV_prob ->push_back(refittedVertex_prob);
-              PV_dN ->push_back(refittedVertex_dN);
+              //PV_dN ->push_back(refittedVertex_dN);
 
               mu7_ip4_matched->push_back(TriggerMatches[0]);
               mu7_ip5_matched->push_back(TriggerMatches[1]);
@@ -878,6 +918,9 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     C_mu2_pz->clear();
     C_mu2_eta->clear();
     C_mu2_ips_xy->clear();
+    C_mu2_ips_z->clear();
+    C_mu2_ip_xy->clear();
+    C_mu2_ip_z->clear();
     C_mu2_charge->clear();
     C_mu2_isSoft->clear();
     C_mu2_isLoose->clear();
@@ -900,22 +943,22 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
     PV_x->clear();   PV_y->clear();   PV_z->clear();
     PV_xErr->clear();   PV_yErr->clear();   PV_zErr->clear();
-    PV_prob->clear();   PV_dN->clear();
+    PV_prob->clear();   //PV_dN->clear();
 
     mu7_ip4_matched->clear();      mu7_ip5_matched->clear();      mu7_ip6_matched->clear();
     mu8_ip4_matched->clear();      mu8_ip5_matched->clear();      mu8_ip6_matched->clear();
     mu9_ip4_matched->clear();      mu9_ip5_matched->clear();      mu9_ip6_matched->clear();
-    mu12_ip4_matched->clear();      mu12_ip5_matched->clear();     mu12_ip6_matched->clear();
+    mu12_ip4_matched->clear();     mu12_ip5_matched->clear();     mu12_ip6_matched->clear();
 
     mu7_ip4_matched_lastAcc->clear();      mu7_ip5_matched_lastAcc->clear();      mu7_ip6_matched_lastAcc->clear();
     mu8_ip4_matched_lastAcc->clear();      mu8_ip5_matched_lastAcc->clear();      mu8_ip6_matched_lastAcc->clear();
     mu9_ip4_matched_lastAcc->clear();      mu9_ip5_matched_lastAcc->clear();      mu9_ip6_matched_lastAcc->clear();
-    mu12_ip4_matched_lastAcc->clear();      mu12_ip5_matched_lastAcc->clear();     mu12_ip6_matched_lastAcc->clear();
+    mu12_ip4_matched_lastAcc->clear();     mu12_ip5_matched_lastAcc->clear();     mu12_ip6_matched_lastAcc->clear();
 
     mu7_ip4_fired->clear();      mu7_ip5_fired->clear();      mu7_ip6_fired->clear();
     mu8_ip4_fired->clear();      mu8_ip5_fired->clear();      mu8_ip6_fired->clear();
     mu9_ip4_fired->clear();      mu9_ip5_fired->clear();      mu9_ip6_fired->clear();
-    mu12_ip4_fired->clear();      mu12_ip5_fired->clear();     mu12_ip6_fired->clear();
+    mu12_ip4_fired->clear();     mu12_ip5_fired->clear();     mu12_ip6_fired->clear();
 
     C_pi_isHnlDaughter->clear();
     C_mu1_isHnlDaughter->clear();
@@ -1019,6 +1062,9 @@ void hnlAnalyzer_miniAOD::beginJob()
         wwtree->Branch("C_mu2_pz"    , &C_mu2_pz);
         wwtree->Branch("C_mu2_eta"   , &C_mu2_eta);
         wwtree->Branch("C_mu2_ips_xy", &C_mu2_ips_xy);
+        wwtree->Branch("C_mu2_ips_z" , &C_mu2_ips_z);
+        wwtree->Branch("C_mu2_ip_xy" , &C_mu2_ip_xy);
+        wwtree->Branch("C_mu2_ip_z"  , &C_mu2_ip_z);
         wwtree->Branch("C_mu2_charge", &C_mu2_charge);
         wwtree->Branch("C_mu2_isSoft", &C_mu2_isSoft);
         wwtree->Branch("C_mu2_isLoose", &C_mu2_isLoose);
@@ -1046,7 +1092,7 @@ void hnlAnalyzer_miniAOD::beginJob()
         wwtree->Branch("PV_yErr" , &PV_yErr);
         wwtree->Branch("PV_zErr" , &PV_zErr);
         wwtree->Branch("PV_prob" , &PV_prob);
-        wwtree->Branch("PV_dN"   , &PV_dN);
+        //wwtree->Branch("PV_dN"   , &PV_dN);
 
         wwtree->Branch("mu7_ip4_matched" , &mu7_ip4_matched );
         wwtree->Branch("mu7_ip5_matched" , &mu7_ip5_matched );
