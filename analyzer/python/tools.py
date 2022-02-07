@@ -18,8 +18,8 @@ def update_json_cfg(cat,das_string,output_file_name,input_cfg_json,output_cfg_fu
     dataset_dic["processed_events"]  = max_events
 
     if cat!="data":
-        dataset_dic["cross_section"]     = input_cfg_json[cat][das_string]["cross_section"]
-        dataset_dic["filter_efficiency"] = input_cfg_json[cat][das_string]["filter_efficiency"]
+        dataset_dic["cross_section"]     = input_cfg_json[das_string]["cross_section"]
+        dataset_dic["filter_efficiency"] = input_cfg_json[das_string]["filter_efficiency"]
     else:
         dataset_dic["integrated_lumi"] = -1.0
 
