@@ -433,9 +433,9 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
          //Next lines are very recommended
 
          if(iTrack1->pt() <= 0.5) continue;  // 0.3
-         if(fabs(iTrack1->eta()) > 2.4 ) continue; // 3.0
+         if(std::abs(iTrack1->eta()) > 2.4 ) continue; // 3.0
          if(iTrack1->charge()==0) continue;// NO neutral objects
-         if(fabs(iTrack1->pdgId())!=211) continue;//Due to the lack of the particle ID all the tracks for cms are pions(ID==211)
+         if(std::abs(iTrack1->pdgId())!=211) continue;//Due to the lack of the particle ID all the tracks for cms are pions(ID==211)
          if(!(iTrack1->trackHighPurity())) continue; //displaced track are by default not high purity tracks in miniAOD
          
 
@@ -461,9 +461,6 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
             bool isLooseMuon1 = false;
             bool isMediumMuon1 = false;
 
-            TrackRef muTrack1 = iMuon1->track();
-        
-            if (muTrack1.isNull()) continue;
             if (IsTheSame(*iTrack1,*iMuon1) ) continue;
             if (iMuon1->isSoftMuon(thePrimaryV)) isSoftMuon1=true;
             if (iMuon1->isLooseMuon())           isLooseMuon1=true;
@@ -481,8 +478,8 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
             if(!muon1TT.isValid()) continue;
             if(!pion1TT.isValid()) continue;
             if(muon1TT == pion1TT) continue;
-            if(iMuon1->pt() < 3.0) continue;
-            if(fabs(iMuon1->eta()) > 2.4)  continue;
+            if(iMuon1->pt() < 0.3) continue; //3.0
+            if(std::abs(iMuon1->eta()) > 2.4)  continue;
             if(!(glbTrackMu1->quality(reco::TrackBase::highPurity)))  continue; //quality
         
 
@@ -547,10 +544,6 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
             for ( std::vector<pat::Muon>::const_iterator iMuon2 = iMuon1+1; iMuon2 != thePATMuonHandle->end(); ++iMuon2){
 
               if (IsTheSame(*iTrack1,*iMuon2) ) continue;
-
-              TrackRef muTrack2 = iMuon2->track();
-            
-              if (muTrack2.isNull()) continue;
        
               bool isSoftMuon2 = false;
               bool isLooseMuon2 = false;
@@ -561,8 +554,8 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
               if (iMuon2->isMediumMuon())          isMediumMuon2=true;
 
      
-              if(iMuon2->pt() < 5.0) continue;
-              if(fabs(iMuon2->eta()) > 1.7)  continue;
+              if(iMuon2->pt() < 0.3) continue; //5.0
+              if(std::abs(iMuon2->eta()) > 2.4)  continue;
 
               TrackRef glbTrackMu2;
               glbTrackMu2 = iMuon2->track();
