@@ -62,6 +62,9 @@ process.TFileService = cms.Service("TFileService",
        fileName = cms.string(options.outputFile)
 )
 
+from Configuration.DataProcessing.Utils import addMonitoring
+process = addMonitoring(process)
+
 process.mySequence = cms.Sequence(process.demo)
 
 process.p = cms.Path(process.mySequence)
