@@ -9,7 +9,7 @@ input_miniAOD_cfg = {}
 with open(in_cfg_full_path,'r') as f:
     input_miniAOD_cfg = json.loads(f.read())
 
-dataset_name = '/BToNMuX_NToEMuPi_SoftQCD_b_mN1p0_ctau10p0mm_TuneCP5_13TeV-pythia8-evtgen/RunIIAutumn18MiniAOD-Custom_RDStar_BParking_102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
+#dataset_name = '/BToNMuX_NToEMuPi_SoftQCD_b_mN1p0_ctau10p0mm_TuneCP5_13TeV-pythia8-evtgen/RunIIAutumn18MiniAOD-Custom_RDStar_BParking_102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
 #dataset_name = '/BToNMuX_NToEMuPi_SoftQCD_b_mN1p0_ctau100p0mm_TuneCP5_13TeV-pythia8-evtgen/RunIIAutumn18MiniAOD-Custom_RDStar_BParking_102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
 #dataset_name = '/BToNMuX_NToEMuPi_SoftQCD_b_mN1p0_ctau1000p0mm_TuneCP5_13TeV-pythia8-evtgen/RunIIAutumn18MiniAOD-Custom_RDStar_BParking_102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
 #dataset_name = '/BToNMuX_NToEMuPi_SoftQCD_b_mN1p5_ctau1000p0mm_TuneCP5_13TeV-pythia8-evtgen/RunIIAutumn18MiniAOD-Custom_RDStar_BParking_102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
@@ -19,17 +19,20 @@ dataset_name = '/BToNMuX_NToEMuPi_SoftQCD_b_mN1p0_ctau10p0mm_TuneCP5_13TeV-pythi
 #dataset_name = "/QCD_Pt-20to30_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v4/MINIAODSIM"
 #dataset_name = "/QCD_Pt-30to50_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM"
 #dataset_name = "/QCD_Pt-50to80_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM"
+dataset_name = '/ParkingBPH1/Run2018D-05May2019promptD-v1/MINIAOD'
+dataset_label = str(dataset_name.split("/")[1])
 
 config.section_("General")
 config.General.workArea = 'crab_projects'
-config.General.requestName = str(dataset_name.split("/")[1])+"_v0"
+config.General.requestName = dataset_label+"_v0"
 if str(input_miniAOD_cfg[dataset_name]["dataset_category"]) == "data":
-    config.General.requestName = str(dataset_name.split("/")[1]+"_"+dataset_name.split("/")[2]+"_v0")
+    dataset_label = str(dataset_name.split("/")[1]+"_"+dataset_name.split("/")[2])
+    config.General.requestName = dataset_label+"_v0"
 
 config.section_("JobType")
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = '/afs/cern.ch/work/l/llunerti/private/CMSSW_10_2_27/src/hnlAnalysis/analyzer/python/hnlAnalyzer_cfg.py'
-config.JobType.pyCfgParams = ["globalTag={}".format(str(input_miniAOD_cfg[dataset_name]["global_tag"]))]
+config.JobType.pyCfgParams = ["globalTag={}".format(str(input_miniAOD_cfg[dataset_name]["global_tag"])),"outputFile=hnlAnalyzer_{}_tree.root".format(dataset_label)]
 
 config.section_("Data")
 config.Data.splitting = 'Automatic'
