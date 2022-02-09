@@ -3,9 +3,9 @@ import subprocess
 from hnlAnalysis.analyzer.tools import *
 
 max_events        = 100
-#das_string        = "/ParkingBPH1/Run2018D-05May2019promptD-v1/MINIAOD"
+das_string        = "/ParkingBPH1/Run2018D-05May2019promptD-v1/MINIAOD"
 #das_string        = "/QCD_Pt-15to20_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM"
-das_string        = "/QCD_Pt-20to30_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v4/MINIAODSIM"
+#das_string        = "/QCD_Pt-20to30_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v4/MINIAODSIM"
 #das_string        = "/QCD_Pt-30to50_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM"
 #das_string        = "/QCD_Pt-50to80_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM"
 #das_string        = "/BToNMuX_NToEMuPi_SoftQCD_b_mN1p5_ctau10p0mm_TuneCP5_13TeV-pythia8-evtgen/RunIIAutumn18MiniAOD-Custom_RDStar_BParking_102X_upgrade2018_realistic_v15-v2/MINIAODSIM" 
@@ -48,7 +48,7 @@ cfgFile = os.path.join(cfgDir,"hnlAnalyzer_cfg.py")
 
 global_tag = input_miniAOD_cfg[das_string]["global_tag"]
 
-command = "cmsRun {} inputFiles={} outputFile={} maxEvents={} globalTag={}".format(cfgFile,inputFiles_str,outputFileName,max_events,global_tag)
+command = "cmsRun -e -j report.xml {} inputFiles={} outputFile={} maxEvents={} globalTag={}".format(cfgFile,inputFiles_str,outputFileName,max_events,global_tag)
 
 print("*** Running:")
 print(command)
