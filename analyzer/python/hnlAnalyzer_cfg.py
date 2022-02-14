@@ -54,8 +54,16 @@ process.demo = cms.EDAnalyzer('hnlAnalyzer_miniAOD',
                           displacedMuons       = cms.InputTag("displacedStandAloneMuons"),
                           lostTracks           = cms.InputTag("lostTracks"),
                           PUInfoTag            = cms.InputTag("slimmedAddPileupInfo"),
-                          fileName             = cms.untracked.string(options.outputFile),
-                          useDisplacedMuons    = cms.untracked.bool(False)
+                          mu_pt_cut            = cms.untracked.double(0.3),
+                          mu_eta_cut           = cms.untracked.double(2.4),
+                          trigMu_pt_cut        = cms.untracked.double(5.0),
+                          trigMu_eta_cut       = cms.untracked.double(1.7),
+                          pi_pt_cut            = cms.untracked.double(0.5),
+                          pi_eta_cut           = cms.untracked.double(2.4),
+                          b_mass_cut           = cms.untracked.double(8.0),
+                          hnl_mass_cut         = cms.untracked.double(6.3),
+                          vtx_prob_cut         = cms.untracked.double(0.01),
+                          fileName             = cms.untracked.string(options.outputFile)
                           )
 
 process.TFileService = cms.Service("TFileService",
