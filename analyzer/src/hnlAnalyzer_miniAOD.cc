@@ -131,30 +131,27 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     //std::vector<int>   *PV_dN;
 
     std::vector<short>  *mu7_ip4_matched;
-    std::vector<short>  *mu7_ip5_matched;
-    std::vector<short>  *mu7_ip6_matched;
-    std::vector<short>  *mu8_ip4_matched;
+    std::vector<short>  *mu8_ip3_matched;
+    std::vector<short>  *mu8_ip3p5_matched ;
     std::vector<short>  *mu8_ip5_matched;
     std::vector<short>  *mu8_ip6_matched;
     std::vector<short>  *mu9_ip4_matched;
     std::vector<short>  *mu9_ip5_matched;
     std::vector<short>  *mu9_ip6_matched;
-    std::vector<short>  *mu12_ip4_matched;
-    std::vector<short>  *mu12_ip5_matched;
+    std::vector<short>  *mu10p5_ip3p5_matched;
     std::vector<short>  *mu12_ip6_matched;
 
     std::vector<short>  *mu7_ip4_fired;
-    std::vector<short>  *mu7_ip5_fired;
-    std::vector<short>  *mu7_ip6_fired;
-    std::vector<short>  *mu8_ip4_fired;
+    std::vector<short>  *mu8_ip3_fired;
+    std::vector<short>  *mu8_ip3p5_fired;
     std::vector<short>  *mu8_ip5_fired;
     std::vector<short>  *mu8_ip6_fired;
     std::vector<short>  *mu9_ip4_fired;
     std::vector<short>  *mu9_ip5_fired;
     std::vector<short>  *mu9_ip6_fired;
-    std::vector<short>  *mu12_ip4_fired;
-    std::vector<short>  *mu12_ip5_fired;
+    std::vector<short>  *mu10p5_ip3p5_fired;
     std::vector<short>  *mu12_ip6_fired;
+
 
     std::vector<short>  *C_pi_isHnlDaughter;
     std::vector<short>  *C_mu1_isHnlDaughter;
@@ -264,15 +261,27 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   PV_xErr(0)  , PV_yErr(0), PV_zErr(0),
   PV_prob(0)  , //PV_dN(0),
 
-  mu7_ip4_matched(0),    mu7_ip5_matched(0),    mu7_ip6_matched(0),
-  mu8_ip4_matched(0),    mu8_ip5_matched(0),    mu8_ip6_matched(0),
-  mu9_ip4_matched(0),    mu9_ip5_matched(0),    mu9_ip6_matched(0),
-  mu12_ip4_matched(0),    mu12_ip5_matched(0),   mu12_ip6_matched(0),
+  mu7_ip4_matched(0),
+  mu8_ip3_matched(0),
+  mu8_ip3p5_matched (0),
+  mu8_ip5_matched(0),
+  mu8_ip6_matched(0),
+  mu9_ip4_matched(0),
+  mu9_ip5_matched(0),
+  mu9_ip6_matched(0),
+  mu10p5_ip3p5_matched(0),
+  mu12_ip6_matched(0),
 
-  mu7_ip4_fired(0),    mu7_ip5_fired(0),    mu7_ip6_fired(0),
-  mu8_ip4_fired(0),    mu8_ip5_fired(0),    mu8_ip6_fired(0),
-  mu9_ip4_fired(0),    mu9_ip5_fired(0),    mu9_ip6_fired(0),
-  mu12_ip4_fired(0),    mu12_ip5_fired(0),   mu12_ip6_fired(0),
+  mu7_ip4_fired(0),
+  mu8_ip3_fired(0),
+  mu8_ip3p5_fired (0),
+  mu8_ip5_fired(0),
+  mu8_ip6_fired(0),
+  mu9_ip4_fired(0),
+  mu9_ip5_fired(0),
+  mu9_ip6_fired(0),
+  mu10p5_ip3p5_fired(0),
+  mu12_ip6_fired(0),
 
   C_pi_isHnlDaughter(0),
   C_mu1_isHnlDaughter(0),
@@ -370,19 +379,32 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   else
     nPU_trueInt = -1;
 
+  //std::vector<std::string> TriggerPaths = {
+  //  "HLT_Mu7_IP4_part*" , // 0
+  //  "HLT_Mu7_IP5_part*" , // 1
+  //  "HLT_Mu7_IP6_part*" , // 2  
+  //  "HLT_Mu8_IP4_part*" , // 3
+  //  "HLT_Mu8_IP5_part*" , // 4  
+  //  "HLT_Mu8_IP6_part*" , // 5  
+  //  "HLT_Mu9_IP4_part*" , // 6
+  //  "HLT_Mu9_IP5_part*" , // 7  
+  //  "HLT_Mu9_IP6_part*" , // 8  
+  //  "HLT_Mu12_IP4_part*", // 9
+  //  "HLT_Mu12_IP5_part*", // 10
+  //  "HLT_Mu12_IP6_part*"  // 11
+  //};
+
   std::vector<std::string> TriggerPaths = {
-    "HLT_Mu7_IP4_part*" , // 0
-    "HLT_Mu7_IP5_part*" , // 1
-    "HLT_Mu7_IP6_part*" , // 2  
-    "HLT_Mu8_IP4_part*" , // 3
-    "HLT_Mu8_IP5_part*" , // 4  
-    "HLT_Mu8_IP6_part*" , // 5  
-    "HLT_Mu9_IP4_part*" , // 6
-    "HLT_Mu9_IP5_part*" , // 7  
-    "HLT_Mu9_IP6_part*" , // 8  
-    "HLT_Mu12_IP4_part*", // 9
-    "HLT_Mu12_IP5_part*", // 10
-    "HLT_Mu12_IP6_part*"  // 11
+    "HLT_Mu7_IP4_part*" ,     // 0
+    "HLT_Mu8_IP3_part*" ,     // 1
+    "HLT_Mu8_IP3p5_part*" ,   // 2  
+    "HLT_Mu8_IP5_part*" ,     // 3
+    "HLT_Mu8_IP6_part*" ,     // 4  
+    "HLT_Mu9_IP4_part*" ,     // 5
+    "HLT_Mu9_IP5_part*" ,     // 6  
+    "HLT_Mu9_IP6_part*" ,     // 7  
+    "HLT_Mu10p5_IP3p5_part*", // 8
+    "HLT_Mu12_IP6_part*"      // 9
   };
 
   unsigned int nTrigPaths = (unsigned int)TriggerPaths.size();
@@ -778,30 +800,26 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	//PV_dN ->push_back(refittedVertex_dN);
 
 	mu7_ip4_matched->push_back(TriggerMatches[0]);
-	mu7_ip5_matched->push_back(TriggerMatches[1]);
-	mu7_ip6_matched->push_back(TriggerMatches[2]);
-	mu8_ip4_matched->push_back(TriggerMatches[3]);
-	mu8_ip5_matched->push_back(TriggerMatches[4]);
-	mu8_ip6_matched->push_back(TriggerMatches[5]);
-	mu9_ip4_matched->push_back(TriggerMatches[6]);
-	mu9_ip5_matched->push_back(TriggerMatches[7]);
-	mu9_ip6_matched->push_back(TriggerMatches[8]);
-	mu12_ip4_matched->push_back(TriggerMatches[9]);
-	mu12_ip5_matched->push_back(TriggerMatches[10]);
-	mu12_ip6_matched->push_back(TriggerMatches[11]);
+	mu8_ip3_matched->push_back(TriggerMatches[1]);
+	mu8_ip3p5_matched ->push_back(TriggerMatches[2]);
+	mu8_ip5_matched->push_back(TriggerMatches[3]);
+	mu8_ip6_matched->push_back(TriggerMatches[4]);
+	mu9_ip4_matched->push_back(TriggerMatches[5]);
+	mu9_ip5_matched->push_back(TriggerMatches[6]);
+	mu9_ip6_matched->push_back(TriggerMatches[7]);
+	mu10p5_ip3p5_matched->push_back(TriggerMatches[8]);
+	mu12_ip6_matched->push_back(TriggerMatches[9]);
 
-	mu7_ip4_fired->push_back(TriggersFired[0]);
-	mu7_ip5_fired->push_back(TriggersFired[1]);
-	mu7_ip6_fired->push_back(TriggersFired[2]);
-	mu8_ip4_fired->push_back(TriggersFired[3]);
-	mu8_ip5_fired->push_back(TriggersFired[4]);
-	mu8_ip6_fired->push_back(TriggersFired[5]);
-	mu9_ip4_fired->push_back(TriggersFired[6]);
-	mu9_ip5_fired->push_back(TriggersFired[7]);
-	mu9_ip6_fired->push_back(TriggersFired[8]);
-	mu12_ip4_fired->push_back(TriggersFired[9]);
-	mu12_ip5_fired->push_back(TriggersFired[10]);
-	mu12_ip6_fired->push_back(TriggersFired[11]);
+	mu7_ip4_fired->push_back(TriggerMatches[0]);
+	mu8_ip3_fired->push_back(TriggerMatches[1]);
+	mu8_ip3p5_fired ->push_back(TriggerMatches[2]);
+	mu8_ip5_fired->push_back(TriggerMatches[3]);
+	mu8_ip6_fired->push_back(TriggerMatches[4]);
+	mu9_ip4_fired->push_back(TriggerMatches[5]);
+	mu9_ip5_fired->push_back(TriggerMatches[6]);
+	mu9_ip6_fired->push_back(TriggerMatches[7]);
+	mu10p5_ip3p5_fired->push_back(TriggerMatches[8]);
+	mu12_ip6_fired->push_back(TriggerMatches[9]);
 
 	nCand ++;
 
@@ -887,15 +905,27 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   PV_xErr->clear();   PV_yErr->clear();   PV_zErr->clear();
   PV_prob->clear();   //PV_dN->clear();
 
-  mu7_ip4_matched->clear();      mu7_ip5_matched->clear();      mu7_ip6_matched->clear();
-  mu8_ip4_matched->clear();      mu8_ip5_matched->clear();      mu8_ip6_matched->clear();
-  mu9_ip4_matched->clear();      mu9_ip5_matched->clear();      mu9_ip6_matched->clear();
-  mu12_ip4_matched->clear();     mu12_ip5_matched->clear();     mu12_ip6_matched->clear();
+  mu7_ip4_matched->clear();
+  mu8_ip3_matched->clear();
+  mu8_ip3p5_matched ->clear();
+  mu8_ip5_matched->clear();
+  mu8_ip6_matched->clear();
+  mu9_ip4_matched->clear();
+  mu9_ip5_matched->clear();
+  mu9_ip6_matched->clear();
+  mu10p5_ip3p5_matched->clear();
+  mu12_ip6_matched->clear();
 
-  mu7_ip4_fired->clear();      mu7_ip5_fired->clear();      mu7_ip6_fired->clear();
-  mu8_ip4_fired->clear();      mu8_ip5_fired->clear();      mu8_ip6_fired->clear();
-  mu9_ip4_fired->clear();      mu9_ip5_fired->clear();      mu9_ip6_fired->clear();
-  mu12_ip4_fired->clear();     mu12_ip5_fired->clear();     mu12_ip6_fired->clear();
+  mu7_ip4_fired->clear();
+  mu8_ip3_fired->clear();
+  mu8_ip3p5_fired ->clear();
+  mu8_ip5_fired->clear();
+  mu8_ip6_fired->clear();
+  mu9_ip4_fired->clear();
+  mu9_ip5_fired->clear();
+  mu9_ip6_fired->clear();
+  mu10p5_ip3p5_fired->clear();
+  mu12_ip6_fired->clear();
 
   C_pi_isHnlDaughter->clear();
   C_mu1_isHnlDaughter->clear();
@@ -1032,31 +1062,27 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("PV_prob" , &PV_prob);
   //wwtree->Branch("PV_dN"   , &PV_dN);
 
-  wwtree->Branch("mu7_ip4_matched" , &mu7_ip4_matched );
-  wwtree->Branch("mu7_ip5_matched" , &mu7_ip5_matched );
-  wwtree->Branch("mu7_ip6_matched" , &mu7_ip6_matched );
-  wwtree->Branch("mu8_ip4_matched" , &mu8_ip4_matched );
-  wwtree->Branch("mu8_ip5_matched" , &mu8_ip5_matched );
-  wwtree->Branch("mu8_ip6_matched" , &mu8_ip6_matched );
-  wwtree->Branch("mu9_ip4_matched" , &mu9_ip4_matched );
-  wwtree->Branch("mu9_ip5_matched" , &mu9_ip5_matched );
-  wwtree->Branch("mu9_ip6_matched" , &mu9_ip6_matched );
-  wwtree->Branch("mu12_ip4_matched", &mu12_ip4_matched);
-  wwtree->Branch("mu12_ip5_matched", &mu12_ip5_matched);
-  wwtree->Branch("mu12_ip6_matched", &mu12_ip6_matched);
+  wwtree->Branch("mu7_ip4_matched",    &mu7_ip4_matched);
+  wwtree->Branch("mu8_ip3_matched",    &mu8_ip3_matched);
+  wwtree->Branch("mu8_ip3p5_matched",  &mu8_ip3p5_matched);
+  wwtree->Branch("mu8_ip5_matched",    &mu8_ip5_matched);
+  wwtree->Branch("mu8_ip6_matched",    &mu8_ip6_matched);
+  wwtree->Branch("mu9_ip4_matched",    &mu9_ip4_matched);
+  wwtree->Branch("mu9_ip5_matched",    &mu9_ip5_matched);
+  wwtree->Branch("mu9_ip6_matched",    &mu9_ip6_matched);
+  wwtree->Branch("mu10p5_ip3p5_matched", &mu10p5_ip3p5_matched);
+  wwtree->Branch("mu12_ip6_matched",   &mu12_ip6_matched);
 
-  wwtree->Branch("mu7_ip4_fired" , &mu7_ip4_fired);
-  wwtree->Branch("mu7_ip5_fired" , &mu7_ip5_fired);
-  wwtree->Branch("mu7_ip6_fired" , &mu7_ip6_fired);
-  wwtree->Branch("mu8_ip4_fired" , &mu8_ip4_fired);
-  wwtree->Branch("mu8_ip5_fired" , &mu8_ip5_fired);
-  wwtree->Branch("mu8_ip6_fired" , &mu8_ip6_fired);
-  wwtree->Branch("mu9_ip4_fired" , &mu9_ip4_fired);
-  wwtree->Branch("mu9_ip5_fired" , &mu9_ip5_fired);
-  wwtree->Branch("mu9_ip6_fired" , &mu9_ip6_fired);
-  wwtree->Branch("mu12_ip4_fired", &mu12_ip4_fired);
-  wwtree->Branch("mu12_ip5_fired", &mu12_ip5_fired);
-  wwtree->Branch("mu12_ip6_fired", &mu12_ip6_fired);
+  wwtree->Branch("mu7_ip4_fired",    &mu7_ip4_fired);
+  wwtree->Branch("mu8_ip3_fired",    &mu8_ip3_fired);
+  wwtree->Branch("mu8_ip3p5_fired",  &mu8_ip3p5_fired);
+  wwtree->Branch("mu8_ip5_fired",    &mu8_ip5_fired);
+  wwtree->Branch("mu8_ip6_fired",    &mu8_ip6_fired);
+  wwtree->Branch("mu9_ip4_fired",    &mu9_ip4_fired);
+  wwtree->Branch("mu9_ip5_fired",    &mu9_ip5_fired);
+  wwtree->Branch("mu9_ip6_fired",    &mu9_ip6_fired);
+  wwtree->Branch("mu10p5_ip3p5_fired", &mu10p5_ip3p5_fired);
+  wwtree->Branch("mu12_ip6_fired",   &mu12_ip6_fired);
 
   wwtree->Branch("C_pi_isHnlDaughter"        , &C_pi_isHnlDaughter        );
   wwtree->Branch("C_mu1_isHnlDaughter"        , &C_mu1_isHnlDaughter        );
