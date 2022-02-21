@@ -28,7 +28,7 @@ options.register ('globalTag',
 # setup any defaults you want
 options.inputFiles= '/store/mc/RunIIAutumn18MiniAOD/QCD_Pt-20to30_MuEnrichedPt5_TuneCP5_13TeV_pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v4/110000/B8C204C2-97BC-7E49-8C89-35A24B1C3F26.root'
 options.outputFile = 'hnlAnalyzer_'+options.inputFiles[0].split("/")[4]+'_tree.root'
-options.maxEvents = 10
+options.maxEvents = -1
 
 # get and parse the command line arguments
 options.parseArguments()
