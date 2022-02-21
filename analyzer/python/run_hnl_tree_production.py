@@ -5,10 +5,11 @@ from hnlAnalysis.analyzer.tools import *
 max_events        = 1000
 #das_string        = "/ParkingBPH1/Run2018D-05May2019promptD-v1/MINIAOD"
 #das_string        = "/QCD_Pt-15to20_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM"
-#das_string        = "/QCD_Pt-20to30_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v4/MINIAODSIM"
+das_string        = "/QCD_Pt-20to30_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v4/MINIAODSIM"
 #das_string        = "/QCD_Pt-30to50_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM"
-das_string        = "/QCD_Pt-50to80_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM"
+#das_string        = "/QCD_Pt-50to80_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM"
 #das_string        = "/BToNMuX_NToEMuPi_SoftQCD_b_mN1p5_ctau10p0mm_TuneCP5_13TeV-pythia8-evtgen/RunIIAutumn18MiniAOD-Custom_RDStar_BParking_102X_upgrade2018_realistic_v15-v2/MINIAODSIM" 
+#das_string        = "/BToNMuX_NToEMuPi_SoftQCD_b_mN1p0_ctau10p0mm_TuneCP5_13TeV-pythia8-evtgen/RunIIAutumn18MiniAOD-Custom_RDStar_BParking_102X_upgrade2018_realistic_v15-v2/MINIAODSIM" 
 in_cfg_full_path  = "/afs/cern.ch/work/l/llunerti/private/CMSSW_10_2_27/src/hnlAnalysis/analyzer/cfg/miniAOD_input.json"
 out_cfg_full_path = "/afs/cern.ch/work/l/llunerti/private/hnlTreeAnalyzer/cfg/hnl_tree_input.json"
 
@@ -38,8 +39,11 @@ if category == "data":
 else:
     outputFileName     = 'hnlAnalyzer_'+das_string.split("/")[1]+'_tree.root'
 
+output_dir = subprocess.check_output("pwd",shell=True).strip("\n")
+outputFileNameList = [str(os.path.join(output_dir,outputFileName))]
+
 # write metadata in a json file
-update_json_cfg(das_string,outputFileName,input_miniAOD_cfg,out_cfg_full_path,max_events)
+update_json_cfg(das_string,outputFileNameList,input_miniAOD_cfg,out_cfg_full_path,max_events)
 
 inputFiles_str = ",".join(inputFileName_list[:10]) #a short list of files is sufficient for local tests 
 
