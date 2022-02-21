@@ -4,8 +4,7 @@ import os
 import subprocess
 from datetime import datetime
 
-def update_json_cfg(das_string,output_file_name,input_cfg_json,output_cfg_full_path,max_events,lxplus=True):
-    output_dir = subprocess.check_output("pwd",shell=True).strip("\n")
+def update_json_cfg(das_string,output_file_name_list,input_cfg_json,output_cfg_full_path,max_events):
     production_time = str(datetime.now())
     
     out_cfg = {}
@@ -13,7 +12,7 @@ def update_json_cfg(das_string,output_file_name,input_cfg_json,output_cfg_full_p
         out_cfg = json.loads(f.read())
 
     dataset_dic = {}
-    dataset_dic["file_name_list"]   = [str(os.path.join(output_dir,output_file_name))]
+    dataset_dic["file_name_list"]   = output_file_name_list
     dataset_dic["production_time"]  = production_time
     dataset_dic["processed_events"] = max_events
     cat = str(input_cfg_json[das_string]["dataset_category"])
