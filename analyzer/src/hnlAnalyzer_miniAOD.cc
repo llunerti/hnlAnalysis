@@ -96,6 +96,7 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     std::vector<float> *C_Hnl_vertex_cos2D;
 
     std::vector<float> *C_mu1_px, *C_mu1_py, *C_mu1_pz;
+    std::vector<float> *C_mu1_PAT_pt;
     std::vector<float> *C_mu1_eta;
     std::vector<float> *C_mu1_ips_xy, *C_mu1_ips_z;
     std::vector<float> *C_mu1_ip_xy, *C_mu1_ip_z;
@@ -106,6 +107,7 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     std::vector<short> *C_mu1_isMCMatched;
 
     std::vector<float> *C_mu2_px, *C_mu2_py, *C_mu2_pz;
+    std::vector<float> *C_mu2_PAT_pt;
     std::vector<float> *C_mu2_eta;
     std::vector<float> *C_mu2_ips_xy, *C_mu2_ips_z;
     std::vector<float> *C_mu2_ip_xy, *C_mu2_ip_z;
@@ -140,6 +142,39 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     std::vector<short>  *mu9_ip6_matched;
     std::vector<short>  *mu10p5_ip3p5_matched;
     std::vector<short>  *mu12_ip6_matched;
+
+    std::vector<float>  *mu7_ip4_eta;
+    std::vector<float>  *mu8_ip3_eta;
+    std::vector<float>  *mu8_ip3p5_eta;
+    std::vector<float>  *mu8_ip5_eta;
+    std::vector<float>  *mu8_ip6_eta;
+    std::vector<float>  *mu9_ip4_eta;
+    std::vector<float>  *mu9_ip5_eta;
+    std::vector<float>  *mu9_ip6_eta;
+    std::vector<float>  *mu10p5_ip3p5_eta;
+    std::vector<float>  *mu12_ip6_eta;
+
+    std::vector<float>  *mu7_ip4_pt;
+    std::vector<float>  *mu8_ip3_pt;
+    std::vector<float>  *mu8_ip3p5_pt ;
+    std::vector<float>  *mu8_ip5_pt;
+    std::vector<float>  *mu8_ip6_pt;
+    std::vector<float>  *mu9_ip4_pt;
+    std::vector<float>  *mu9_ip5_pt;
+    std::vector<float>  *mu9_ip6_pt;
+    std::vector<float>  *mu10p5_ip3p5_pt;
+    std::vector<float>  *mu12_ip6_pt;
+
+    std::vector<float>  *mu7_ip4_dr;
+    std::vector<float>  *mu8_ip3_dr;
+    std::vector<float>  *mu8_ip3p5_dr ;
+    std::vector<float>  *mu8_ip5_dr;
+    std::vector<float>  *mu8_ip6_dr;
+    std::vector<float>  *mu9_ip4_dr;
+    std::vector<float>  *mu9_ip5_dr;
+    std::vector<float>  *mu9_ip6_dr;
+    std::vector<float>  *mu10p5_ip3p5_dr;
+    std::vector<float>  *mu12_ip6_dr;
 
     std::vector<short>  *mu7_ip4_fired;
     std::vector<short>  *mu8_ip3_fired;
@@ -216,6 +251,7 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   C_mu1_px(0),
   C_mu1_py(0),       
   C_mu1_pz(0),
+  C_mu1_PAT_pt(0),
   C_mu1_eta(0),
   C_mu1_ips_xy(0),
   C_mu1_ips_z(0),
@@ -230,6 +266,7 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   C_mu2_px(0),
   C_mu2_py(0),
   C_mu2_pz(0),
+  C_mu2_PAT_pt(0),
   C_mu2_eta(0),
   C_mu2_ips_xy(0),
   C_mu2_ips_z(0),
@@ -271,6 +308,39 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   mu9_ip6_matched(0),
   mu10p5_ip3p5_matched(0),
   mu12_ip6_matched(0),
+
+  mu7_ip4_eta(0),
+  mu8_ip3_eta(0),
+  mu8_ip3p5_eta (0),
+  mu8_ip5_eta(0),
+  mu8_ip6_eta(0),
+  mu9_ip4_eta(0),
+  mu9_ip5_eta(0),
+  mu9_ip6_eta(0),
+  mu10p5_ip3p5_eta(0),
+  mu12_ip6_eta(0),
+
+  mu7_ip4_pt(0),
+  mu8_ip3_pt(0),
+  mu8_ip3p5_pt (0),
+  mu8_ip5_pt(0),
+  mu8_ip6_pt(0),
+  mu9_ip4_pt(0),
+  mu9_ip5_pt(0),
+  mu9_ip6_pt(0),
+  mu10p5_ip3p5_pt(0),
+  mu12_ip6_pt(0),
+
+  mu7_ip4_dr(0),
+  mu8_ip3_dr(0),
+  mu8_ip3p5_dr (0),
+  mu8_ip5_dr(0),
+  mu8_ip6_dr(0),
+  mu9_ip4_dr(0),
+  mu9_ip5_dr(0),
+  mu9_ip6_dr(0),
+  mu10p5_ip3p5_dr(0),
+  mu12_ip6_dr(0),
 
   mu7_ip4_fired(0),
   mu8_ip3_fired(0),
@@ -411,6 +481,9 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
   std::vector<short> TriggersFired(nTrigPaths);
   std::vector<short> TriggerMatches(nTrigPaths);
+  std::vector<float> TriggerPathPt(nTrigPaths);
+  std::vector<float> TriggerPathEta(nTrigPaths);
+  std::vector<float> TriggerPathDR(nTrigPaths);
 
   if (triggerResults_handle.isValid())
   {
@@ -564,9 +637,11 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       }
 
       //add third muon------------------
-      for ( std::vector<pat::Muon>::const_iterator iMuon2 = iMuon1+1; iMuon2 != thePATMuonHandle->end(); ++iMuon2){
+      //for ( std::vector<pat::Muon>::const_iterator iMuon2 = iMuon1+1; iMuon2 != thePATMuonHandle->end(); ++iMuon2){
+      for ( std::vector<pat::Muon>::const_iterator iMuon2 = thePATMuonHandle->begin(); iMuon2 != thePATMuonHandle->end(); ++iMuon2){
 
 	if (IsTheSame(*iTrack1,*iMuon2) ) continue;
+	if (IsTheSame(*iMuon1,*iMuon2) ) continue;
 
 	if(iMuon2->pt() < trigMu_pt_cut_) continue;
 	if(std::abs(iMuon2->eta()) > trigMu_eta_cut_)  continue;
@@ -612,13 +687,60 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	  }
 	}
 
+        int best_matching_path_idx   = -999;
+        float best_matching_path_dr  = -9999.;
+        float best_matching_path_pt  = -9999.;
+        float best_matching_path_eta = -9999.;
+
 	for (unsigned i = 0; i < nTrigPaths; ++i) {
-	  short trigger_match = 0;
 
-	  if(iMuon2->triggerObjectMatchByPath(TriggerPaths[i],true,true)!=nullptr)
-	    trigger_match = 1;
+	  bool debug = false;
 
-	  TriggerMatches[i] = trigger_match;
+	  if(iMuon2->triggerObjectMatches().size()!=0){
+            float min_dr = 9999.;
+            //loop over trigger object matched to muon
+	    for(size_t j=0; j<iMuon2->triggerObjectMatches().size();j++){
+	      if(iMuon2->triggerObjectMatch(j)!=0 && iMuon2->triggerObjectMatch(j)->hasPathName(TriggerPaths[i],true,true)){
+
+		float trig_dr  = reco::deltaR(iMuon2->triggerObjectMatch(j)->p4(), iMuon2->p4()); 
+		float trig_pt  = iMuon2->triggerObjectMatch(j)->pt();                   
+		float trig_eta  = iMuon2->triggerObjectMatch(j)->eta();                   
+
+                //select the match with smallest dR
+                if (trig_dr<min_dr){
+
+                  best_matching_path_idx = i;
+                  min_dr = trig_dr;
+                  best_matching_path_dr  = trig_dr;
+                  best_matching_path_pt  = trig_pt;
+                  best_matching_path_eta = trig_eta;
+
+
+		  if(debug)std::cout <<"Path=" <<TriggerPaths[i] << endl;
+		  if(debug)std::cout <<"HLT-Muon  dR="<<trig_dr << endl;
+		  if(debug)std::cout <<"HLT  Pt="<<iMuon2->triggerObjectMatch(j)->pt() <<" Eta="<<iMuon2->triggerObjectMatch(j)->eta() <<" Phi="<<iMuon2->triggerObjectMatch(j)->phi() << endl;
+		  if(debug)std::cout <<"Muon Pt="<< iMuon2->pt() << " Eta=" << iMuon2->eta() << " Phi=" << iMuon2->phi()  <<endl;
+                }
+	      }
+	    }
+	  }
+	}
+
+	for (unsigned i = 0; i < nTrigPaths; ++i) {
+
+	  if((int)i==best_matching_path_idx){
+	    TriggerMatches[i] = 1;
+            TriggerPathDR[i]  = best_matching_path_dr;
+            TriggerPathPt[i]  = best_matching_path_pt;
+            TriggerPathEta[i] = best_matching_path_eta;
+          }
+	  else{
+	    TriggerMatches[i] = 0;
+            TriggerPathDR[i]  = -9999.;
+            TriggerPathPt[i]  = -9999.;
+            TriggerPathEta[i] = -9999.;
+          }
+
 	}
 
 	//Vertex refit
@@ -736,6 +858,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	C_mu1_px ->push_back(p4mu1.Px());
 	C_mu1_py ->push_back(p4mu1.Py());
 	C_mu1_pz ->push_back(p4mu1.Pz());
+	C_mu1_PAT_pt ->push_back(iMuon1->pt());
 	C_mu1_eta ->push_back(p4mu1.Eta());
 	//C_mu1_ips_xy ->push_back(std::abs(glbTrackMu1->dxy(refitted_vertex_best.position()))/std::abs(glbTrackMu1->dxyError()));
 	//C_mu1_ips_z  ->push_back(std::abs(glbTrackMu1->dz (refitted_vertex_best.position()))/std::abs(glbTrackMu1->dzError()));
@@ -756,6 +879,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	C_mu2_px ->push_back(p4mu2.Px());
 	C_mu2_py ->push_back(p4mu2.Py());
 	C_mu2_pz ->push_back(p4mu2.Pz());
+	C_mu2_PAT_pt ->push_back(iMuon2->pt());
 	C_mu2_eta ->push_back(p4mu2.Eta());
 	C_mu2_ips_xy ->push_back(iMuon2->dB(pat::Muon::PV2D)/iMuon2->edB(pat::Muon::PV2D));
 	C_mu2_ips_z  ->push_back(iMuon2->dB(pat::Muon::PV2D)/iMuon2->edB(pat::Muon::PV2D));
@@ -810,6 +934,39 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	mu10p5_ip3p5_matched->push_back(TriggerMatches[8]);
 	mu12_ip6_matched->push_back(TriggerMatches[9]);
 
+	mu7_ip4_eta->push_back(TriggerPathEta[0]);
+	mu8_ip3_eta->push_back(TriggerPathEta[1]);
+	mu8_ip3p5_eta ->push_back(TriggerPathEta[2]);
+	mu8_ip5_eta->push_back(TriggerPathEta[3]);
+	mu8_ip6_eta->push_back(TriggerPathEta[4]);
+	mu9_ip4_eta->push_back(TriggerPathEta[5]);
+	mu9_ip5_eta->push_back(TriggerPathEta[6]);
+	mu9_ip6_eta->push_back(TriggerPathEta[7]);
+	mu10p5_ip3p5_eta->push_back(TriggerPathEta[8]);
+	mu12_ip6_eta->push_back(TriggerPathEta[9]);
+
+	mu7_ip4_pt->push_back(TriggerPathPt[0]);
+	mu8_ip3_pt->push_back(TriggerPathPt[1]);
+	mu8_ip3p5_pt ->push_back(TriggerPathPt[2]);
+	mu8_ip5_pt->push_back(TriggerPathPt[3]);
+	mu8_ip6_pt->push_back(TriggerPathPt[4]);
+	mu9_ip4_pt->push_back(TriggerPathPt[5]);
+	mu9_ip5_pt->push_back(TriggerPathPt[6]);
+	mu9_ip6_pt->push_back(TriggerPathPt[7]);
+	mu10p5_ip3p5_pt->push_back(TriggerPathPt[8]);
+	mu12_ip6_pt->push_back(TriggerPathPt[9]);
+
+	mu7_ip4_dr->push_back(TriggerPathDR[0]);
+	mu8_ip3_dr->push_back(TriggerPathDR[1]);
+	mu8_ip3p5_dr ->push_back(TriggerPathDR[2]);
+	mu8_ip5_dr->push_back(TriggerPathDR[3]);
+	mu8_ip6_dr->push_back(TriggerPathDR[4]);
+	mu9_ip4_dr->push_back(TriggerPathDR[5]);
+	mu9_ip5_dr->push_back(TriggerPathDR[6]);
+	mu9_ip6_dr->push_back(TriggerPathDR[7]);
+	mu10p5_ip3p5_dr->push_back(TriggerPathDR[8]);
+	mu12_ip6_dr->push_back(TriggerPathDR[9]);
+
 	mu7_ip4_fired->push_back(TriggerMatches[0]);
 	mu8_ip3_fired->push_back(TriggerMatches[1]);
 	mu8_ip3p5_fired ->push_back(TriggerMatches[2]);
@@ -860,6 +1017,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   C_mu1_px->clear();
   C_mu1_py->clear();
   C_mu1_pz->clear();
+  C_mu1_PAT_pt->clear();
   C_mu1_eta->clear();
   C_mu1_ips_xy->clear();
   C_mu1_ips_z->clear();
@@ -874,6 +1032,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   C_mu2_px->clear();
   C_mu2_py->clear();
   C_mu2_pz->clear();
+  C_mu2_PAT_pt->clear();
   C_mu2_eta->clear();
   C_mu2_ips_xy->clear();
   C_mu2_ips_z->clear();
@@ -915,6 +1074,39 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   mu9_ip6_matched->clear();
   mu10p5_ip3p5_matched->clear();
   mu12_ip6_matched->clear();
+
+  mu7_ip4_eta->clear();
+  mu8_ip3_eta->clear();
+  mu8_ip3p5_eta ->clear();
+  mu8_ip5_eta->clear();
+  mu8_ip6_eta->clear();
+  mu9_ip4_eta->clear();
+  mu9_ip5_eta->clear();
+  mu9_ip6_eta->clear();
+  mu10p5_ip3p5_eta->clear();
+  mu12_ip6_eta->clear();
+
+  mu7_ip4_pt->clear();
+  mu8_ip3_pt->clear();
+  mu8_ip3p5_pt ->clear();
+  mu8_ip5_pt->clear();
+  mu8_ip6_pt->clear();
+  mu9_ip4_pt->clear();
+  mu9_ip5_pt->clear();
+  mu9_ip6_pt->clear();
+  mu10p5_ip3p5_pt->clear();
+  mu12_ip6_pt->clear();
+
+  mu7_ip4_dr->clear();
+  mu8_ip3_dr->clear();
+  mu8_ip3p5_dr ->clear();
+  mu8_ip5_dr->clear();
+  mu8_ip6_dr->clear();
+  mu9_ip4_dr->clear();
+  mu9_ip5_dr->clear();
+  mu9_ip6_dr->clear();
+  mu10p5_ip3p5_dr->clear();
+  mu12_ip6_dr->clear();
 
   mu7_ip4_fired->clear();
   mu8_ip3_fired->clear();
@@ -1012,6 +1204,7 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("C_mu1_px"    , &C_mu1_px);
   wwtree->Branch("C_mu1_py"    , &C_mu1_py);
   wwtree->Branch("C_mu1_pz"    , &C_mu1_pz);
+  wwtree->Branch("C_mu1_PAT_pt"    , &C_mu1_PAT_pt);
   wwtree->Branch("C_mu1_eta"   , &C_mu1_eta);
   wwtree->Branch("C_mu1_ips_xy", &C_mu1_ips_xy);
   wwtree->Branch("C_mu1_ips_z" , &C_mu1_ips_z);
@@ -1026,6 +1219,7 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("C_mu2_px"    , &C_mu2_px);
   wwtree->Branch("C_mu2_py"    , &C_mu2_py);
   wwtree->Branch("C_mu2_pz"    , &C_mu2_pz);
+  wwtree->Branch("C_mu2_PAT_pt"    , &C_mu2_PAT_pt);
   wwtree->Branch("C_mu2_eta"   , &C_mu2_eta);
   wwtree->Branch("C_mu2_ips_xy", &C_mu2_ips_xy);
   wwtree->Branch("C_mu2_ips_z" , &C_mu2_ips_z);
@@ -1072,6 +1266,39 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("mu9_ip6_matched",    &mu9_ip6_matched);
   wwtree->Branch("mu10p5_ip3p5_matched", &mu10p5_ip3p5_matched);
   wwtree->Branch("mu12_ip6_matched",   &mu12_ip6_matched);
+
+  wwtree->Branch("mu7_ip4_eta",    &mu7_ip4_eta);
+  wwtree->Branch("mu8_ip3_eta",    &mu8_ip3_eta);
+  wwtree->Branch("mu8_ip3p5_eta",  &mu8_ip3p5_eta);
+  wwtree->Branch("mu8_ip5_eta",    &mu8_ip5_eta);
+  wwtree->Branch("mu8_ip6_eta",    &mu8_ip6_eta);
+  wwtree->Branch("mu9_ip4_eta",    &mu9_ip4_eta);
+  wwtree->Branch("mu9_ip5_eta",    &mu9_ip5_eta);
+  wwtree->Branch("mu9_ip6_eta",    &mu9_ip6_eta);
+  wwtree->Branch("mu10p5_ip3p5_eta", &mu10p5_ip3p5_eta);
+  wwtree->Branch("mu12_ip6_eta",   &mu12_ip6_eta);
+
+  wwtree->Branch("mu7_ip4_pt",    &mu7_ip4_pt);
+  wwtree->Branch("mu8_ip3_pt",    &mu8_ip3_pt);
+  wwtree->Branch("mu8_ip3p5_pt",  &mu8_ip3p5_pt);
+  wwtree->Branch("mu8_ip5_pt",    &mu8_ip5_pt);
+  wwtree->Branch("mu8_ip6_pt",    &mu8_ip6_pt);
+  wwtree->Branch("mu9_ip4_pt",    &mu9_ip4_pt);
+  wwtree->Branch("mu9_ip5_pt",    &mu9_ip5_pt);
+  wwtree->Branch("mu9_ip6_pt",    &mu9_ip6_pt);
+  wwtree->Branch("mu10p5_ip3p5_pt", &mu10p5_ip3p5_pt);
+  wwtree->Branch("mu12_ip6_pt",   &mu12_ip6_pt);
+
+  wwtree->Branch("mu7_ip4_dr",    &mu7_ip4_dr);
+  wwtree->Branch("mu8_ip3_dr",    &mu8_ip3_dr);
+  wwtree->Branch("mu8_ip3p5_dr",  &mu8_ip3p5_dr);
+  wwtree->Branch("mu8_ip5_dr",    &mu8_ip5_dr);
+  wwtree->Branch("mu8_ip6_dr",    &mu8_ip6_dr);
+  wwtree->Branch("mu9_ip4_dr",    &mu9_ip4_dr);
+  wwtree->Branch("mu9_ip5_dr",    &mu9_ip5_dr);
+  wwtree->Branch("mu9_ip6_dr",    &mu9_ip6_dr);
+  wwtree->Branch("mu10p5_ip3p5_dr", &mu10p5_ip3p5_dr);
+  wwtree->Branch("mu12_ip6_dr",   &mu12_ip6_dr);
 
   wwtree->Branch("mu7_ip4_fired",    &mu7_ip4_fired);
   wwtree->Branch("mu8_ip3_fired",    &mu8_ip3_fired);
