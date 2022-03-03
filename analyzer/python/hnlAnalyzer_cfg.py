@@ -60,8 +60,10 @@ process.demo = cms.EDAnalyzer('hnlAnalyzer_miniAOD',
                           trigMu_eta_cut       = cms.untracked.double(1.7),
                           pi_pt_cut            = cms.untracked.double(0.5),
                           pi_eta_cut           = cms.untracked.double(2.4),
-                          b_mass_cut           = cms.untracked.double(8.0),
-                          hnl_mass_cut         = cms.untracked.double(6.3),
+                          b_mass_cut           = cms.untracked.double(10.0),
+                          mupi_mass_high_cut   = cms.untracked.double(7.0),
+                          mupi_mass_low_cut    = cms.untracked.double(0.2),
+                          mupi_pt_cut          = cms.untracked.double(1.0),
                           vtx_prob_cut         = cms.untracked.double(0.01),
                           fileName             = cms.untracked.string(options.outputFile)
                           )
