@@ -66,7 +66,7 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> hlTriggerObjects_;
     edm::EDGetTokenT<reco::GenParticleCollection> prunedGenToken_;
     edm::EDGetTokenT<std::vector<pat::PackedGenParticle>> packedGenToken_;
-    edm::EDGetTokenT<reco::BeamSpot> thebeamspot_;
+    edm::EDGetTokenT<reco::BeamSpot> beamSpotToken_;
     edm::EDGetTokenT<reco::VertexCollection> vtxSample;
     edm::EDGetTokenT<std::vector<pat::PackedCandidate>> tracks_;
     //edm::EDGetTokenT<std::vector<pat::PackedCandidate>> lostTracks_;
@@ -79,8 +79,10 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     double trigMu_eta_cut_;
     double pi_pt_cut_;
     double pi_eta_cut_;
-    double b_mass_cut_;
-    double hnl_mass_cut_;
+    double mumupi_mass_cut_;
+    double mupi_mass_high_cut_;
+    double mupi_mass_low_cut_;
+    double mupi_pt_cut_;
     double vtx_prob_cut_;
 
     Int_t N_written_events;
@@ -98,8 +100,10 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     std::vector<float> *C_mu1_px, *C_mu1_py, *C_mu1_pz;
     std::vector<float> *C_mu1_PAT_pt;
     std::vector<float> *C_mu1_eta;
-    std::vector<float> *C_mu1_ips_xy, *C_mu1_ips_z;
-    std::vector<float> *C_mu1_ip_xy, *C_mu1_ip_z;
+    std::vector<float> *C_mu1_BS_ips_xy, *C_mu1_PV_ips_z;
+    std::vector<float> *C_mu1_BS_ips;
+    std::vector<float> *C_mu1_BS_ip_xy, *C_mu1_PV_ip_z;
+    std::vector<float> *C_mu1_BS_ip;
     std::vector<int>   *C_mu1_charge;
     std::vector<short> *C_mu1_isSoft;
     std::vector<short> *C_mu1_isLoose;
@@ -109,8 +113,10 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     std::vector<float> *C_mu2_px, *C_mu2_py, *C_mu2_pz;
     std::vector<float> *C_mu2_PAT_pt;
     std::vector<float> *C_mu2_eta;
-    std::vector<float> *C_mu2_ips_xy, *C_mu2_ips_z;
-    std::vector<float> *C_mu2_ip_xy, *C_mu2_ip_z;
+    std::vector<float> *C_mu2_BS_ips_xy, *C_mu2_PV_ips_z;
+    std::vector<float> *C_mu2_BS_ips;
+    std::vector<float> *C_mu2_BS_ip_xy, *C_mu2_PV_ip_z;
+    std::vector<float> *C_mu2_BS_ip;
     std::vector<int>   *C_mu2_charge;
     std::vector<short> *C_mu2_isSoft;
     std::vector<short> *C_mu2_isLoose;
@@ -123,8 +129,8 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     std::vector<float> *C_px, *C_py, *C_pz;
     std::vector<float> *C_pi_px, *C_pi_py, *C_pi_pz;
     std::vector<float> *C_pi_eta;
-    std::vector<float> *C_pi_ips_xy, *C_pi_ips_z;
-    std::vector<float> *C_pi_ip_xy, *C_pi_ip_z;
+    std::vector<float> *C_pi_BS_ips_xy, *C_pi_BS_ips_z;
+    std::vector<float> *C_pi_BS_ip_xy, *C_pi_BS_ip_z;
     std::vector<short> *C_pi_isMCMatched;
 
     std::vector<float> *PV_x, *PV_y, *PV_z;
@@ -216,7 +222,7 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   hlTriggerObjects_ (consumes<pat::TriggerObjectStandAloneCollection> (iConfig.getParameter<edm::InputTag>("HLTriggerObjects"))),
   prunedGenToken_   (consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("prunedGenParticleTag"))),
   packedGenToken_   (consumes<std::vector<pat::PackedGenParticle>>(iConfig.getParameter<edm::InputTag>("packedGenParticleTag"))),
-  thebeamspot_      (consumes<reco::BeamSpot> (iConfig.getParameter<edm::InputTag>("beamSpotTag"))),
+  beamSpotToken_    (consumes<reco::BeamSpot> (iConfig.getParameter<edm::InputTag>("beamSpotTag"))),
   vtxSample         (consumes<reco::VertexCollection> (iConfig.getParameter<edm::InputTag>("VtxSample"))),
   tracks_           (consumes<std::vector<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("Track"))),
   //lostTracks_       (consumes<std::vector<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("lostTracks"))),
@@ -228,8 +234,10 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   trigMu_eta_cut_   (iConfig.getUntrackedParameter<double>("trigMu_eta_cut")),
   pi_pt_cut_        (iConfig.getUntrackedParameter<double>("pi_pt_cut" )),
   pi_eta_cut_       (iConfig.getUntrackedParameter<double>("pi_eta_cut")),
-  b_mass_cut_       (iConfig.getUntrackedParameter<double>("b_mass_cut")),
-  hnl_mass_cut_     (iConfig.getUntrackedParameter<double>("hnl_mass_cut")),
+  mumupi_mass_cut_  (iConfig.getUntrackedParameter<double>("b_mass_cut")),
+  mupi_mass_high_cut_(iConfig.getUntrackedParameter<double>("mupi_mass_high_cut")),
+  mupi_mass_low_cut_(iConfig.getUntrackedParameter<double>("mupi_mass_low_cut")),
+  mupi_pt_cut_      (iConfig.getUntrackedParameter<double>("mupi_pt_cut")),
   vtx_prob_cut_     (iConfig.getUntrackedParameter<double>("vtx_prob_cut")),
 
   C_Hnl_vertex_prob(0),
@@ -253,10 +261,12 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   C_mu1_pz(0),
   C_mu1_PAT_pt(0),
   C_mu1_eta(0),
-  C_mu1_ips_xy(0),
-  C_mu1_ips_z(0),
-  C_mu1_ip_xy(0),
-  C_mu1_ip_z(0),
+  C_mu1_BS_ips_xy(0),
+  C_mu1_PV_ips_z(0),
+  C_mu1_BS_ips(0),
+  C_mu1_BS_ip_xy(0),
+  C_mu1_PV_ip_z(0),
+  C_mu1_BS_ip(0),
   C_mu1_charge(0),
   C_mu1_isSoft(0),
   C_mu1_isLoose(0),
@@ -268,10 +278,12 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   C_mu2_pz(0),
   C_mu2_PAT_pt(0),
   C_mu2_eta(0),
-  C_mu2_ips_xy(0),
-  C_mu2_ips_z(0),
-  C_mu2_ip_xy(0),
-  C_mu2_ip_z(0),
+  C_mu2_BS_ips_xy(0),
+  C_mu2_PV_ips_z(0),
+  C_mu2_BS_ips(0),
+  C_mu2_BS_ip_xy(0),
+  C_mu2_PV_ip_z(0),
+  C_mu2_BS_ip(0),
   C_mu2_charge(0),
   C_mu2_isSoft(0),
   C_mu2_isLoose(0),
@@ -288,10 +300,10 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   C_pi_py(0),
   C_pi_pz(0),
   C_pi_eta(0),
-  C_pi_ips_xy(0),
-  C_pi_ips_z(0),
-  C_pi_ip_xy(0),
-  C_pi_ip_z(0),
+  C_pi_BS_ips_xy(0),
+  C_pi_BS_ips_z(0),
+  C_pi_BS_ip_xy(0),
+  C_pi_BS_ip_z(0),
   C_pi_isMCMatched(0),
 
   PV_x(0)  , PV_y(0), PV_z(0),
@@ -415,6 +427,9 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   edm::Handle<std::vector<pat::PackedGenParticle>> packedGenParticleCollection;
   iEvent.getByToken(packedGenToken_,packedGenParticleCollection);
 
+  edm::Handle<reco::BeamSpot> theBeamSpot;
+  iEvent.getByToken(beamSpotToken_,theBeamSpot);
+
   edm::Handle<reco::VertexCollection> recVtxs;
   iEvent.getByToken(vtxSample, recVtxs);
 
@@ -448,21 +463,6 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   }
   else
     nPU_trueInt = -1;
-
-  //std::vector<std::string> TriggerPaths = {
-  //  "HLT_Mu7_IP4_part*" , // 0
-  //  "HLT_Mu7_IP5_part*" , // 1
-  //  "HLT_Mu7_IP6_part*" , // 2  
-  //  "HLT_Mu8_IP4_part*" , // 3
-  //  "HLT_Mu8_IP5_part*" , // 4  
-  //  "HLT_Mu8_IP6_part*" , // 5  
-  //  "HLT_Mu9_IP4_part*" , // 6
-  //  "HLT_Mu9_IP5_part*" , // 7  
-  //  "HLT_Mu9_IP6_part*" , // 8  
-  //  "HLT_Mu12_IP4_part*", // 9
-  //  "HLT_Mu12_IP5_part*", // 10
-  //  "HLT_Mu12_IP6_part*"  // 11
-  //};
 
   std::vector<std::string> TriggerPaths = {
     "HLT_Mu7_IP4_part*" ,     // 0
@@ -550,22 +550,35 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
     for ( std::vector<pat::Muon>::const_iterator iMuon1 = thePATMuonHandle->begin(); iMuon1 != thePATMuonHandle->end(); ++iMuon1){
 
-      if(iMuon1->pt() < mu_pt_cut_) continue;
-      if(std::abs(iMuon1->eta()) > mu_eta_cut_)  continue;
+      if (IsTheSame(*iTrack1,*iMuon1) ) continue;
 
+      //cuts on muon pt and eta
+      if (iMuon1->pt() < mu_pt_cut_) continue;
+      if (std::abs(iMuon1->eta()) > mu_eta_cut_)  continue;
+
+      //save muon id info
       bool isSoftMuon1 = false;
       bool isLooseMuon1 = false;
       bool isMediumMuon1 = false;
 
-      if (IsTheSame(*iTrack1,*iMuon1) ) continue;
       if (iMuon1->isSoftMuon(thePrimaryV)) isSoftMuon1=true;
       if (iMuon1->isLooseMuon())           isLooseMuon1=true;
       if (iMuon1->isMediumMuon())          isMediumMuon1=true;
 
+      //cuts on muon track
       TrackRef glbTrackMu1;
       glbTrackMu1 = iMuon1->track();
       if( glbTrackMu1.isNull())  continue;
       if(!(glbTrackMu1->quality(reco::TrackBase::highPurity)))  continue;
+
+      //cuts on mupi mass and pt
+      TLorentzVector p4mu1,p4pi1;
+      p4pi1.SetPtEtaPhiM(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(), pdg.PDG_PION_MASS);
+      p4mu1.SetPtEtaPhiM(iMuon1->pt(), iMuon1->eta(), iMuon1->phi(), pdg.PDG_MUON_MASS);
+
+      if ((p4mu1+p4pi1).M() >  mupi_mass_high_cut_) continue;
+      if ((p4mu1+p4pi1).M() <  mupi_mass_low_cut_) continue;
+      if ((p4mu1+p4pi1).Pt() <  mupi_pt_cut_) continue;
 
 
       TransientTrack muon1TT((*TTrackBuilder).build(glbTrackMu1));
@@ -575,11 +588,6 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       if(!muon1TT.isValid()) continue;
       if(!pion1TT.isValid()) continue;
       if(muon1TT == pion1TT) continue;
-
-
-      TLorentzVector p4mu1,p4pi1;
-      p4pi1.SetPtEtaPhiM(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(), pdg.PDG_PION_MASS);
-      p4mu1.SetPtEtaPhiM(iMuon1->pt(), iMuon1->eta(), iMuon1->phi(), pdg.PDG_MUON_MASS);
 
 
       float muon_sigma = pdg.PDG_MUON_MASS * 1.e-6;
@@ -612,7 +620,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
       double muPi_mass = muPi_particle->currentState().mass();
 
-      if ( muPi_mass >  hnl_mass_cut_) continue;
+      //if ( muPi_mass >  mupi_mass_high_cut_) continue;
 
 
       double muPi_vtxprob = TMath::Prob(muPi_vtx->chiSquared(), muPi_vtx->degreesOfFreedom());
@@ -637,15 +645,16 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       }
 
       //add third muon------------------
-      //for ( std::vector<pat::Muon>::const_iterator iMuon2 = iMuon1+1; iMuon2 != thePATMuonHandle->end(); ++iMuon2){
       for ( std::vector<pat::Muon>::const_iterator iMuon2 = thePATMuonHandle->begin(); iMuon2 != thePATMuonHandle->end(); ++iMuon2){
 
 	if (IsTheSame(*iTrack1,*iMuon2) ) continue;
 	if (IsTheSame(*iMuon1,*iMuon2) ) continue;
 
+        //cut on muon pt and eta
 	if(iMuon2->pt() < trigMu_pt_cut_) continue;
 	if(std::abs(iMuon2->eta()) > trigMu_eta_cut_)  continue;
 
+        //save muon id info
 	bool isSoftMuon2 = false;
 	bool isLooseMuon2 = false;
 	bool isMediumMuon2 = false;
@@ -657,13 +666,13 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 	TrackRef glbTrackMu2;
 	glbTrackMu2 = iMuon2->track();
-	if( glbTrackMu2.isNull())  continue;
-	if(!(glbTrackMu2->quality(reco::TrackBase::highPurity)))  continue;
+	if (glbTrackMu2.isNull())  continue;
+	if (!(glbTrackMu2->quality(reco::TrackBase::highPurity)))  continue;
 
 	TLorentzVector p4mu2;
 	p4mu2.SetPtEtaPhiM(iMuon2->pt(), iMuon2->eta(), iMuon2->phi(), pdg.PDG_MUON_MASS);
 
-	if ((p4mu1 + p4mu2 + p4pi1).M() > b_mass_cut_) continue;
+	if ((p4mu1 + p4mu2 + p4pi1).M() > mumupi_mass_cut_) continue;
 
 	bool is_hnl_brother = false;
 	bool isMCMatchedMuon2 = false;
@@ -687,14 +696,13 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	  }
 	}
 
+
         int best_matching_path_idx   = -999;
         float best_matching_path_dr  = -9999.;
         float best_matching_path_pt  = -9999.;
         float best_matching_path_eta = -9999.;
 
 	for (unsigned i = 0; i < nTrigPaths; ++i) {
-
-	  bool debug = false;
 
 	  if(iMuon2->triggerObjectMatches().size()!=0){
             float min_dr = 9999.;
@@ -714,12 +722,6 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
                   best_matching_path_dr  = trig_dr;
                   best_matching_path_pt  = trig_pt;
                   best_matching_path_eta = trig_eta;
-
-
-		  if(debug)std::cout <<"Path=" <<TriggerPaths[i] << endl;
-		  if(debug)std::cout <<"HLT-Muon  dR="<<trig_dr << endl;
-		  if(debug)std::cout <<"HLT  Pt="<<iMuon2->triggerObjectMatch(j)->pt() <<" Eta="<<iMuon2->triggerObjectMatch(j)->eta() <<" Phi="<<iMuon2->triggerObjectMatch(j)->phi() << endl;
-		  if(debug)std::cout <<"Muon Pt="<< iMuon2->pt() << " Eta=" << iMuon2->eta() << " Phi=" << iMuon2->phi()  <<endl;
                 }
 	      }
 	    }
@@ -739,11 +741,10 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
             TriggerPathDR[i]  = -9999.;
             TriggerPathPt[i]  = -9999.;
             TriggerPathEta[i] = -9999.;
-          }
+          }	
+        }
 
-	}
 
-	//Vertex refit
 	reco::Vertex refitted_vertex_best = thePrimaryV;
 
 	//Do not perfrorm vertex refit
@@ -821,10 +822,10 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	Double_t refittedVertex_zErr = refitted_vertex_best.covariance(2, 2);
 	Double_t refittedVertex_prob = (TMath::Prob(refitted_vertex_best.chi2(), (int) refitted_vertex_best.ndof()));
 
-	//compute cos2D and cos3D wrt primary vertex (or beam spot?)
-	Double_t dx = muPi_vtx->position().x() - refitted_vertex_best.x();
-	Double_t dy = muPi_vtx->position().y() - refitted_vertex_best.y();
-	Double_t dz = muPi_vtx->position().z() - refitted_vertex_best.z();
+	//compute cos2D and cos3D wrt beam spot
+	Double_t dx = muPi_vtx->position().x() - (*theBeamSpot).position().x();
+	Double_t dy = muPi_vtx->position().y() - (*theBeamSpot).position().y();
+	Double_t dz = muPi_vtx->position().z() - (*theBeamSpot).position().z();
 	Double_t px = muPi_particle->currentState().globalMomentum().x();
 	Double_t py = muPi_particle->currentState().globalMomentum().y();
 	Double_t pz = muPi_particle->currentState().globalMomentum().z();
@@ -860,14 +861,12 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	C_mu1_pz ->push_back(p4mu1.Pz());
 	C_mu1_PAT_pt ->push_back(iMuon1->pt());
 	C_mu1_eta ->push_back(p4mu1.Eta());
-	//C_mu1_ips_xy ->push_back(std::abs(glbTrackMu1->dxy(refitted_vertex_best.position()))/std::abs(glbTrackMu1->dxyError()));
-	//C_mu1_ips_z  ->push_back(std::abs(glbTrackMu1->dz (refitted_vertex_best.position()))/std::abs(glbTrackMu1->dzError()));
-	//C_mu1_ip_xy ->push_back(std::abs(glbTrackMu1->dxy(refitted_vertex_best.position())));
-	//C_mu1_ip_z  ->push_back(std::abs(glbTrackMu1->dz (refitted_vertex_best.position())));
-	C_mu1_ips_xy ->push_back(iMuon1->dB(pat::Muon::PV2D)/iMuon1->edB(pat::Muon::PV2D));
-	C_mu1_ips_z  ->push_back(iMuon1->dB(pat::Muon::PV2D)/iMuon1->edB(pat::Muon::PV2D));
-	C_mu1_ip_xy  ->push_back(iMuon1->dB(pat::Muon::PV2D));
-	C_mu1_ip_z   ->push_back(iMuon1->dB(pat::Muon::PV2D));
+	C_mu1_BS_ips_xy ->push_back(iMuon1->dB(pat::Muon::BS2D)/iMuon1->edB(pat::Muon::BS2D));
+	C_mu1_BS_ips    ->push_back(iMuon1->dB(pat::Muon::BS3D)/iMuon1->edB(pat::Muon::BS3D));
+	C_mu1_PV_ips_z  ->push_back(iMuon1->dB(pat::Muon::PVDZ)/iMuon1->edB(pat::Muon::PVDZ));
+	C_mu1_BS_ip_xy  ->push_back(iMuon1->dB(pat::Muon::BS2D));
+	C_mu1_BS_ip     ->push_back(iMuon1->dB(pat::Muon::BS3D));
+	C_mu1_PV_ip_z   ->push_back(iMuon1->dB(pat::Muon::PVDZ));
 	C_mu1_isHnlDaughter->push_back(hnl_mu_match ? 1 : 0);
 	C_mu1_charge->push_back(iMuon1->charge());
 	C_mu1_isSoft   ->push_back(isSoftMuon1? 1: 0);
@@ -881,10 +880,12 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	C_mu2_pz ->push_back(p4mu2.Pz());
 	C_mu2_PAT_pt ->push_back(iMuon2->pt());
 	C_mu2_eta ->push_back(p4mu2.Eta());
-	C_mu2_ips_xy ->push_back(iMuon2->dB(pat::Muon::PV2D)/iMuon2->edB(pat::Muon::PV2D));
-	C_mu2_ips_z  ->push_back(iMuon2->dB(pat::Muon::PV2D)/iMuon2->edB(pat::Muon::PV2D));
-	C_mu2_ip_xy  ->push_back(iMuon2->dB(pat::Muon::PV2D));
-	C_mu2_ip_z   ->push_back(iMuon2->dB(pat::Muon::PV2D));
+	C_mu2_BS_ips_xy ->push_back(iMuon2->dB(pat::Muon::BS2D)/iMuon2->edB(pat::Muon::BS2D));
+	C_mu2_BS_ips    ->push_back(iMuon2->dB(pat::Muon::BS3D)/iMuon2->edB(pat::Muon::BS3D));
+	C_mu2_PV_ips_z  ->push_back(iMuon2->dB(pat::Muon::PVDZ)/iMuon2->edB(pat::Muon::PVDZ));
+	C_mu2_BS_ip_xy  ->push_back(iMuon2->dB(pat::Muon::BS2D));
+	C_mu2_BS_ip     ->push_back(iMuon2->dB(pat::Muon::BS3D));
+	C_mu2_PV_ip_z   ->push_back(iMuon2->dB(pat::Muon::PVDZ));
 	C_mu2_charge ->push_back(iMuon2->charge());
 	C_mu2_isHnlBrother->push_back(is_hnl_brother ? 1 : 0);
 	C_mu2_isSoft   ->push_back(isSoftMuon2? 1: 0);
@@ -897,14 +898,10 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	C_pi_py ->push_back(p4pi1.Py());
 	C_pi_pz ->push_back(p4pi1.Pz());
 	C_pi_eta ->push_back(p4pi1.Eta());
-	//C_pi_ips_xy ->push_back(std::abs(iTrack1->dxy(refitted_vertex_best.position()))/std::abs(iTrack1->dxyError()));
-	//C_pi_ips_z ->push_back(std::abs(iTrack1->dz(refitted_vertex_best.position()))/std::abs(iTrack1->dzError()));
-	//C_pi_ip_xy ->push_back(std::abs(iTrack1->dxy(refitted_vertex_best.position())));
-	//C_pi_ip_z  ->push_back(std::abs(iTrack1->dz (refitted_vertex_best.position())));
-	C_pi_ips_xy->push_back(std::abs(iTrack1->dxy())/std::abs(iTrack1->dxyError()));
-	C_pi_ips_z ->push_back(std::abs(iTrack1->dz ())/std::abs(iTrack1->dzError()));
-	C_pi_ip_xy ->push_back(std::abs(iTrack1->dxy()));
-	C_pi_ip_z  ->push_back(std::abs(iTrack1->dz ()));
+	C_pi_BS_ips_xy->push_back(std::abs(iTrack1->dxy((*theBeamSpot).position()))/std::abs(iTrack1->dxyError()));
+	C_pi_BS_ips_z ->push_back(std::abs(iTrack1->dz ((*theBeamSpot).position()))/std::abs(iTrack1->dzError()));
+	C_pi_BS_ip_xy ->push_back(std::abs(iTrack1->dxy((*theBeamSpot).position())));
+	C_pi_BS_ip_z  ->push_back(std::abs(iTrack1->dz ((*theBeamSpot).position())));
 	C_pi_isMCMatched ->push_back(isMCMatchedTrack1? 1: 0);
 	C_pi_isHnlDaughter->push_back(hnl_pi_match ? 1 : 0);
 
@@ -1019,10 +1016,12 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   C_mu1_pz->clear();
   C_mu1_PAT_pt->clear();
   C_mu1_eta->clear();
-  C_mu1_ips_xy->clear();
-  C_mu1_ips_z->clear();
-  C_mu1_ip_xy->clear();
-  C_mu1_ip_z->clear();
+  C_mu1_BS_ips_xy->clear();
+  C_mu1_BS_ips->clear();
+  C_mu1_PV_ips_z->clear();
+  C_mu1_BS_ip_xy->clear();
+  C_mu1_BS_ip->clear();
+  C_mu1_PV_ip_z->clear();
   C_mu1_charge->clear();
   C_mu1_isSoft->clear();
   C_mu1_isLoose->clear();
@@ -1034,10 +1033,12 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   C_mu2_pz->clear();
   C_mu2_PAT_pt->clear();
   C_mu2_eta->clear();
-  C_mu2_ips_xy->clear();
-  C_mu2_ips_z->clear();
-  C_mu2_ip_xy->clear();
-  C_mu2_ip_z->clear();
+  C_mu2_BS_ips_xy->clear();
+  C_mu2_BS_ips->clear();
+  C_mu2_PV_ips_z->clear();
+  C_mu2_BS_ip_xy->clear();
+  C_mu2_BS_ip->clear();
+  C_mu2_PV_ip_z->clear();
   C_mu2_charge->clear();
   C_mu2_isSoft->clear();
   C_mu2_isLoose->clear();
@@ -1054,10 +1055,10 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   C_pi_py->clear();
   C_pi_pz->clear();
   C_pi_eta->clear();
-  C_pi_ips_xy->clear();
-  C_pi_ips_z->clear();
-  C_pi_ip_xy->clear();
-  C_pi_ip_z->clear();
+  C_pi_BS_ips_xy->clear();
+  C_pi_BS_ips_z->clear();
+  C_pi_BS_ip_xy->clear();
+  C_pi_BS_ip_z->clear();
   C_pi_isMCMatched->clear();
 
   PV_x->clear();   PV_y->clear();   PV_z->clear();
@@ -1206,10 +1207,12 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("C_mu1_pz"    , &C_mu1_pz);
   wwtree->Branch("C_mu1_PAT_pt"    , &C_mu1_PAT_pt);
   wwtree->Branch("C_mu1_eta"   , &C_mu1_eta);
-  wwtree->Branch("C_mu1_ips_xy", &C_mu1_ips_xy);
-  wwtree->Branch("C_mu1_ips_z" , &C_mu1_ips_z);
-  wwtree->Branch("C_mu1_ip_xy" , &C_mu1_ip_xy);
-  wwtree->Branch("C_mu1_ip_z"  , &C_mu1_ip_z);
+  wwtree->Branch("C_mu1_BS_ips_xy", &C_mu1_BS_ips_xy);
+  wwtree->Branch("C_mu1_BS_ips", &C_mu1_BS_ips);
+  wwtree->Branch("C_mu1_PV_ips_z" , &C_mu1_PV_ips_z);
+  wwtree->Branch("C_mu1_BS_ip_xy" , &C_mu1_BS_ip_xy);
+  wwtree->Branch("C_mu1_BS_ip" , &C_mu1_BS_ip);
+  wwtree->Branch("C_mu1_PV_ip_z"  , &C_mu1_PV_ip_z);
   wwtree->Branch("C_mu1_charge", &C_mu1_charge);
   wwtree->Branch("C_mu1_isSoft", &C_mu1_isSoft);
   wwtree->Branch("C_mu1_isLoose", &C_mu1_isLoose);
@@ -1221,10 +1224,12 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("C_mu2_pz"    , &C_mu2_pz);
   wwtree->Branch("C_mu2_PAT_pt"    , &C_mu2_PAT_pt);
   wwtree->Branch("C_mu2_eta"   , &C_mu2_eta);
-  wwtree->Branch("C_mu2_ips_xy", &C_mu2_ips_xy);
-  wwtree->Branch("C_mu2_ips_z" , &C_mu2_ips_z);
-  wwtree->Branch("C_mu2_ip_xy" , &C_mu2_ip_xy);
-  wwtree->Branch("C_mu2_ip_z"  , &C_mu2_ip_z);
+  wwtree->Branch("C_mu2_BS_ips_xy", &C_mu2_BS_ips_xy);
+  wwtree->Branch("C_mu2_BS_ips", &C_mu2_BS_ips);
+  wwtree->Branch("C_mu2_PV_ips_z" , &C_mu2_PV_ips_z);
+  wwtree->Branch("C_mu2_BS_ip_xy" , &C_mu2_BS_ip_xy);
+  wwtree->Branch("C_mu2_BS_ip" , &C_mu2_BS_ip);
+  wwtree->Branch("C_mu2_PV_ip_z"  , &C_mu2_PV_ip_z);
   wwtree->Branch("C_mu2_charge", &C_mu2_charge);
   wwtree->Branch("C_mu2_isSoft", &C_mu2_isSoft);
   wwtree->Branch("C_mu2_isLoose", &C_mu2_isLoose);
@@ -1241,10 +1246,10 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("C_pi_py"           , &C_pi_py         );
   wwtree->Branch("C_pi_pz"           , &C_pi_pz         );
   wwtree->Branch("C_pi_eta"          , &C_pi_eta        );
-  wwtree->Branch("C_pi_ips_xy"       , &C_pi_ips_xy     );
-  wwtree->Branch("C_pi_ips_z"        , &C_pi_ips_z     );
-  wwtree->Branch("C_pi_ip_xy"        , &C_pi_ip_xy     );
-  wwtree->Branch("C_pi_ip_z"         , &C_pi_ip_z     );
+  wwtree->Branch("C_pi_BS_ips_xy"       , &C_pi_BS_ips_xy     );
+  wwtree->Branch("C_pi_BS_ips_z"        , &C_pi_BS_ips_z     );
+  wwtree->Branch("C_pi_BS_ip_xy"        , &C_pi_BS_ip_xy     );
+  wwtree->Branch("C_pi_BS_ip_z"         , &C_pi_BS_ip_z     );
   wwtree->Branch("C_pi_isMCMatched", &C_pi_isMCMatched);
 
   wwtree->Branch("PV_x"    , &PV_x);
