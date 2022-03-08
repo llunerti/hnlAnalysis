@@ -516,234 +516,225 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
   KinematicParticleFactoryFromTransientTrack pFactory;
 
-  for (std::vector<pat::PackedCandidate>::const_iterator iTrack1 = thePATTrackHandle->begin(); iTrack1 != thePATTrackHandle->end(); ++iTrack1){
 
-    //Nota bene: if you want to use dxy or dz you need to be sure 
-    //the pt of the tracks is bigger than 0.5 GeV, otherwise you 
-    //will get an error related to covariance matrix.
-    //Next lines are very recommended
+  //add third muon------------------
+  for ( std::vector<pat::Muon>::const_iterator iMuon2 = thePATMuonHandle->begin(); iMuon2 != thePATMuonHandle->end(); ++iMuon2){
 
-    if(iTrack1->pt() <= pi_pt_cut_) continue;
-    if(std::abs(iTrack1->eta()) > pi_pt_cut_) continue;
-    if(iTrack1->charge()==0) continue;// NO neutral objects
-    if(std::abs(iTrack1->pdgId())!=211) continue;//Due to the lack of the particle ID all the tracks for cms are pions(ID==211)
-    if(!(iTrack1->trackHighPurity())) continue; 
+    //cut on muon pt and eta
+    if(iMuon2->pt() < trigMu_pt_cut_) continue;
+    if(std::abs(iMuon2->eta()) > trigMu_eta_cut_)  continue;
+
+    //save muon id info
+    bool isSoftMuon2 = false;
+    bool isLooseMuon2 = false;
+    bool isMediumMuon2 = false;
+
+    if (iMuon2->isSoftMuon(thePrimaryV)) isSoftMuon2=true;
+    if (iMuon2->isLooseMuon())           isLooseMuon2=true;
+    if (iMuon2->isMediumMuon())          isMediumMuon2=true;
 
 
-    bool hnl_pi_match = false;
-    bool isMCMatchedTrack1 = false;
+    TrackRef glbTrackMu2;
+    glbTrackMu2 = iMuon2->track();
+    if (glbTrackMu2.isNull())  continue;
+    if (!(glbTrackMu2->quality(reco::TrackBase::highPurity)))  continue;
+
+    TLorentzVector p4mu2;
+    p4mu2.SetPtEtaPhiM(iMuon2->pt(), iMuon2->eta(), iMuon2->phi(), pdg.PDG_MUON_MASS);
+
+    bool is_hnl_brother = false;
+    bool isMCMatchedMuon2 = false;
 
     if(run==1){
-      int match_pi_idx = getMatchedGenPartIdx(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(),211,*packedGenParticleCollection);
+      int match_mu2_idx = getMatchedGenPartIdx(iMuon2->pt(),iMuon2->eta(),iMuon2->phi(),13,*packedGenParticleCollection);
 
-      if (match_pi_idx>0){
-	isMCMatchedTrack1 = true;
-	pat::PackedGenParticle matchedGenPi = (*packedGenParticleCollection).at(match_pi_idx);
-	if (matchedGenPi.motherRef().isNonnull() &&
-	    matchedGenPi.motherRef().isAvailable() &&
-	    std::abs(matchedGenPi.mother(0)->pdgId()) == 9900015 ){
-	  hnl_pi_match=true;
+      if (match_mu2_idx>0){
+	isMCMatchedMuon2 = true;
+	pat::PackedGenParticle matchedGenMuon = (*packedGenParticleCollection).at(match_mu2_idx);
+	if (matchedGenMuon.motherRef().isNonnull() &&
+	    matchedGenMuon.motherRef().isAvailable()){
+	  const reco::Candidate* genMuonMom = matchedGenMuon.mother(0);
+	  for (unsigned i=0; i<genMuonMom->numberOfDaughters(); ++i){
+	    if(std::abs(genMuonMom->daughter(i)->pdgId()) == 9900015){
+	      is_hnl_brother = true;
+	      break;
+	    }
+	  }
 	}
       }
     }
 
+    for (unsigned i = 0; i < nTrigPaths; ++i) {
 
-    for ( std::vector<pat::Muon>::const_iterator iMuon1 = thePATMuonHandle->begin(); iMuon1 != thePATMuonHandle->end(); ++iMuon1){
+      //int   best_matching_path_idx = -9999;
+      bool match = false;
+      float best_matching_path_dr  = -9999.;
+      float best_matching_path_pt  = -9999.;
+      float best_matching_path_eta = -9999.;
 
-      if (IsTheSame(*iTrack1,*iMuon1) ) continue;
+      if(iMuon2->triggerObjectMatches().size()!=0){
 
-      //cuts on muon pt and eta
-      if (iMuon1->pt() < mu_pt_cut_) continue;
-      if (std::abs(iMuon1->eta()) > mu_eta_cut_)  continue;
+	//loop over trigger object matched to muon
+	for(size_t j=0; j<iMuon2->triggerObjectMatches().size();j++){
+          float min_dr = 9999.;
 
-      //save muon id info
-      bool isSoftMuon1 = false;
-      bool isLooseMuon1 = false;
-      bool isMediumMuon1 = false;
+	  if(iMuon2->triggerObjectMatch(j)!=0 && iMuon2->triggerObjectMatch(j)->hasPathName(TriggerPaths[i],true,true)){
 
-      if (iMuon1->isSoftMuon(thePrimaryV)) isSoftMuon1=true;
-      if (iMuon1->isLooseMuon())           isLooseMuon1=true;
-      if (iMuon1->isMediumMuon())          isMediumMuon1=true;
+	    float trig_dr  = reco::deltaR(iMuon2->triggerObjectMatch(j)->p4(), iMuon2->p4()); 
+	    float trig_pt  = iMuon2->triggerObjectMatch(j)->pt();                   
+	    float trig_eta = iMuon2->triggerObjectMatch(j)->eta();                   
 
-      //cuts on muon track
-      TrackRef glbTrackMu1;
-      glbTrackMu1 = iMuon1->track();
-      if( glbTrackMu1.isNull())  continue;
-      if(!(glbTrackMu1->quality(reco::TrackBase::highPurity)))  continue;
-
-      //cuts on mupi mass and pt
-      TLorentzVector p4mu1,p4pi1;
-      p4pi1.SetPtEtaPhiM(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(), pdg.PDG_PION_MASS);
-      p4mu1.SetPtEtaPhiM(iMuon1->pt(), iMuon1->eta(), iMuon1->phi(), pdg.PDG_MUON_MASS);
-
-      if ((p4mu1+p4pi1).M() >  mupi_mass_high_cut_) continue;
-      if ((p4mu1+p4pi1).M() <  mupi_mass_low_cut_) continue;
-      if ((p4mu1+p4pi1).Pt() <  mupi_pt_cut_) continue;
-
-
-      TransientTrack muon1TT((*TTrackBuilder).build(glbTrackMu1));
-      TransientTrack pion1TT((*TTrackBuilder).build(iTrack1->pseudoTrack()));
-
-
-      if(!muon1TT.isValid()) continue;
-      if(!pion1TT.isValid()) continue;
-      if(muon1TT == pion1TT) continue;
-
-
-      float muon_sigma = pdg.PDG_MUON_MASS * 1.e-6;
-      float chi = 0.;
-      float ndf = 0.;
-
-      vector < RefCountedKinematicParticle > hnlParticles;
-      hnlParticles.push_back(pFactory.particle(muon1TT, pdg.PM_PDG_MUON_MASS, chi, ndf, muon_sigma));
-      hnlParticles.push_back(pFactory.particle(pion1TT, pdg.PM_PDG_PION_MASS, chi, ndf, muon_sigma));
-      KinematicParticleVertexFitter hnlToPiMu_vertexFitter;
-      RefCountedKinematicTree hnlToPiMu_kinTree;
-      int fitgood = 1;
-      try
-      {
-	hnlToPiMu_kinTree = hnlToPiMu_vertexFitter.fit(hnlParticles);
+	    //select the match with smallest dR
+	    if (trig_dr<min_dr){
+	      //best_matching_path_idx = i;
+	      match = true;
+	      min_dr = trig_dr;
+	      best_matching_path_dr  = trig_dr;
+	      best_matching_path_pt  = trig_pt;
+	      best_matching_path_eta = trig_eta;
+	    }
+	  }
+	}
       }
-      catch (VertexException eee)
-      {
-	fitgood = 0;
-      }
-      if (fitgood == 0) continue;
+
+      TriggerMatches[i] = match? 1: 0;
+      TriggerPathDR[i]  = best_matching_path_dr;
+      TriggerPathPt[i]  = best_matching_path_pt;
+      TriggerPathEta[i] = best_matching_path_eta;
+
+    }
+
+    for (std::vector<pat::PackedCandidate>::const_iterator iTrack1 = thePATTrackHandle->begin(); iTrack1 != thePATTrackHandle->end(); ++iTrack1){
+
+      if (IsTheSame(*iTrack1,*iMuon2) ) continue;
+
+      //Nota bene: if you want to use dxy or dz you need to be sure 
+      //the pt of the tracks is bigger than 0.5 GeV, otherwise you 
+      //will get an error related to covariance matrix.
+      //Next lines are very recommended
+
+      if(iTrack1->pt() <= pi_pt_cut_) continue;
+      if(std::abs(iTrack1->eta()) > pi_pt_cut_) continue;
+      if(iTrack1->charge()==0) continue;// NO neutral objects
+      if(std::abs(iTrack1->pdgId())!=211) continue;//Due to the lack of the particle ID all the tracks for cms are pions(ID==211)
+      if(!(iTrack1->trackHighPurity())) continue; 
 
 
-      if (!hnlToPiMu_kinTree->isValid()) continue;
-
-      hnlToPiMu_kinTree->movePointerToTheTop();
-      RefCountedKinematicParticle muPi_particle = hnlToPiMu_kinTree->currentParticle();
-      RefCountedKinematicVertex   muPi_vtx      = hnlToPiMu_kinTree->currentDecayVertex();
-
-
-      double muPi_mass = muPi_particle->currentState().mass();
-
-      //if ( muPi_mass >  mupi_mass_high_cut_) continue;
-
-
-      double muPi_vtxprob = TMath::Prob(muPi_vtx->chiSquared(), muPi_vtx->degreesOfFreedom());
-      if(muPi_vtxprob < vtx_prob_cut_) continue;
-
-
-      bool hnl_mu_match = false;
-      bool isMCMatchedMuon1 = false;
+      bool hnl_pi_match = false;
+      bool isMCMatchedTrack1 = false;
 
       if(run==1){
-	int match_mu1_idx = getMatchedGenPartIdx(iMuon1->pt(),iMuon1->eta(),iMuon1->phi(),13,*packedGenParticleCollection);
+	int match_pi_idx = getMatchedGenPartIdx(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(),211,*packedGenParticleCollection);
 
-	if (match_mu1_idx>0){
-	  isMCMatchedMuon1 = true;
-	  pat::PackedGenParticle matchedGenMuon = (*packedGenParticleCollection).at(match_mu1_idx);
-	  if (matchedGenMuon.motherRef().isNonnull() &&
-	      matchedGenMuon.motherRef().isAvailable() &&
-	      std::abs(matchedGenMuon.mother(0)->pdgId()) == 9900015 ){
-	    hnl_mu_match=true;
+	if (match_pi_idx>0){
+	  isMCMatchedTrack1 = true;
+	  pat::PackedGenParticle matchedGenPi = (*packedGenParticleCollection).at(match_pi_idx);
+	  if (matchedGenPi.motherRef().isNonnull() &&
+	      matchedGenPi.motherRef().isAvailable() &&
+	      std::abs(matchedGenPi.mother(0)->pdgId()) == 9900015 ){
+	    hnl_pi_match=true;
 	  }
 	}
       }
 
-      //add third muon------------------
-      for ( std::vector<pat::Muon>::const_iterator iMuon2 = thePATMuonHandle->begin(); iMuon2 != thePATMuonHandle->end(); ++iMuon2){
 
-	if (IsTheSame(*iTrack1,*iMuon2) ) continue;
-	if (IsTheSame(*iMuon1,*iMuon2) ) continue;
+      for ( std::vector<pat::Muon>::const_iterator iMuon1 = thePATMuonHandle->begin(); iMuon1 != thePATMuonHandle->end(); ++iMuon1){
 
-        //cut on muon pt and eta
-	if(iMuon2->pt() < trigMu_pt_cut_) continue;
-	if(std::abs(iMuon2->eta()) > trigMu_eta_cut_)  continue;
+	if (IsTheSame(*iTrack1,*iMuon1) ) continue;
+        if (IsTheSame(*iMuon1,*iMuon2) ) continue;
 
-        //save muon id info
-	bool isSoftMuon2 = false;
-	bool isLooseMuon2 = false;
-	bool isMediumMuon2 = false;
+	//cuts on muon pt and eta
+	if (iMuon1->pt() < mu_pt_cut_) continue;
+	if (std::abs(iMuon1->eta()) > mu_eta_cut_)  continue;
 
-	if (iMuon2->isSoftMuon(thePrimaryV)) isSoftMuon2=true;
-	if (iMuon2->isLooseMuon())           isLooseMuon2=true;
-	if (iMuon2->isMediumMuon())          isMediumMuon2=true;
+	//save muon id info
+	bool isSoftMuon1 = false;
+	bool isLooseMuon1 = false;
+	bool isMediumMuon1 = false;
+
+	if (iMuon1->isSoftMuon(thePrimaryV)) isSoftMuon1=true;
+	if (iMuon1->isLooseMuon())           isLooseMuon1=true;
+	if (iMuon1->isMediumMuon())          isMediumMuon1=true;
+
+	//cuts on muon track
+	TrackRef glbTrackMu1;
+	glbTrackMu1 = iMuon1->track();
+	if( glbTrackMu1.isNull())  continue;
+	if(!(glbTrackMu1->quality(reco::TrackBase::highPurity)))  continue;
+
+	//cuts on mupi mass and pt
+	TLorentzVector p4mu1,p4pi1;
+	p4pi1.SetPtEtaPhiM(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(), pdg.PDG_PION_MASS);
+	p4mu1.SetPtEtaPhiM(iMuon1->pt(), iMuon1->eta(), iMuon1->phi(), pdg.PDG_MUON_MASS);
+
+        if ((p4mu1 + p4mu2 + p4pi1).M() > mumupi_mass_cut_) continue;
+	if ((p4mu1 + p4pi1).M() >  mupi_mass_high_cut_) continue;
+	if ((p4mu1 + p4pi1).M() <  mupi_mass_low_cut_) continue;
+	if ((p4mu1 + p4pi1).Pt() <  mupi_pt_cut_) continue;
 
 
-	TrackRef glbTrackMu2;
-	glbTrackMu2 = iMuon2->track();
-	if (glbTrackMu2.isNull())  continue;
-	if (!(glbTrackMu2->quality(reco::TrackBase::highPurity)))  continue;
+	TransientTrack muon1TT((*TTrackBuilder).build(glbTrackMu1));
+	TransientTrack pion1TT((*TTrackBuilder).build(iTrack1->pseudoTrack()));
 
-	TLorentzVector p4mu2;
-	p4mu2.SetPtEtaPhiM(iMuon2->pt(), iMuon2->eta(), iMuon2->phi(), pdg.PDG_MUON_MASS);
 
-	if ((p4mu1 + p4mu2 + p4pi1).M() > mumupi_mass_cut_) continue;
+	if(!muon1TT.isValid()) continue;
+	if(!pion1TT.isValid()) continue;
+	if(muon1TT == pion1TT) continue;
 
-	bool is_hnl_brother = false;
-	bool isMCMatchedMuon2 = false;
+
+	float muon_sigma = pdg.PDG_MUON_MASS * 1.e-6;
+	float chi = 0.;
+	float ndf = 0.;
+
+	vector < RefCountedKinematicParticle > hnlParticles;
+	hnlParticles.push_back(pFactory.particle(muon1TT, pdg.PM_PDG_MUON_MASS, chi, ndf, muon_sigma));
+	hnlParticles.push_back(pFactory.particle(pion1TT, pdg.PM_PDG_PION_MASS, chi, ndf, muon_sigma));
+	KinematicParticleVertexFitter hnlToPiMu_vertexFitter;
+	RefCountedKinematicTree hnlToPiMu_kinTree;
+	int fitgood = 1;
+	try
+	{
+	  hnlToPiMu_kinTree = hnlToPiMu_vertexFitter.fit(hnlParticles);
+	}
+	catch (VertexException eee)
+	{
+	  fitgood = 0;
+	}
+	if (fitgood == 0) continue;
+
+
+	if (!hnlToPiMu_kinTree->isValid()) continue;
+
+	hnlToPiMu_kinTree->movePointerToTheTop();
+	RefCountedKinematicParticle muPi_particle = hnlToPiMu_kinTree->currentParticle();
+	RefCountedKinematicVertex   muPi_vtx      = hnlToPiMu_kinTree->currentDecayVertex();
+
+
+	double muPi_mass = muPi_particle->currentState().mass();
+
+	//if ( muPi_mass >  mupi_mass_high_cut_) continue;
+
+
+	double muPi_vtxprob = TMath::Prob(muPi_vtx->chiSquared(), muPi_vtx->degreesOfFreedom());
+	if(muPi_vtxprob < vtx_prob_cut_) continue;
+
+
+	bool hnl_mu_match = false;
+	bool isMCMatchedMuon1 = false;
 
 	if(run==1){
-	  int match_mu2_idx = getMatchedGenPartIdx(iMuon2->pt(),iMuon2->eta(),iMuon2->phi(),13,*packedGenParticleCollection);
+	  int match_mu1_idx = getMatchedGenPartIdx(iMuon1->pt(),iMuon1->eta(),iMuon1->phi(),13,*packedGenParticleCollection);
 
-	  if (match_mu2_idx>0){
-	    isMCMatchedMuon2 = true;
-	    pat::PackedGenParticle matchedGenMuon = (*packedGenParticleCollection).at(match_mu2_idx);
+	  if (match_mu1_idx>0){
+	    isMCMatchedMuon1 = true;
+	    pat::PackedGenParticle matchedGenMuon = (*packedGenParticleCollection).at(match_mu1_idx);
 	    if (matchedGenMuon.motherRef().isNonnull() &&
-		matchedGenMuon.motherRef().isAvailable()){
-	      const reco::Candidate* genMuonMom = matchedGenMuon.mother(0);
-	      for (unsigned i=0; i<genMuonMom->numberOfDaughters(); ++i){
-		if(std::abs(genMuonMom->daughter(i)->pdgId()) == 9900015){
-		  is_hnl_brother = true;
-		  break;
-		}
-	      }
+		matchedGenMuon.motherRef().isAvailable() &&
+		std::abs(matchedGenMuon.mother(0)->pdgId()) == 9900015 ){
+	      hnl_mu_match=true;
 	    }
 	  }
 	}
-
-
-        int best_matching_path_idx   = -999;
-        float best_matching_path_dr  = -9999.;
-        float best_matching_path_pt  = -9999.;
-        float best_matching_path_eta = -9999.;
-
-	for (unsigned i = 0; i < nTrigPaths; ++i) {
-
-	  if(iMuon2->triggerObjectMatches().size()!=0){
-            float min_dr = 9999.;
-            //loop over trigger object matched to muon
-	    for(size_t j=0; j<iMuon2->triggerObjectMatches().size();j++){
-	      if(iMuon2->triggerObjectMatch(j)!=0 && iMuon2->triggerObjectMatch(j)->hasPathName(TriggerPaths[i],true,true)){
-
-		float trig_dr  = reco::deltaR(iMuon2->triggerObjectMatch(j)->p4(), iMuon2->p4()); 
-		float trig_pt  = iMuon2->triggerObjectMatch(j)->pt();                   
-		float trig_eta  = iMuon2->triggerObjectMatch(j)->eta();                   
-
-                //select the match with smallest dR
-                if (trig_dr<min_dr){
-
-                  best_matching_path_idx = i;
-                  min_dr = trig_dr;
-                  best_matching_path_dr  = trig_dr;
-                  best_matching_path_pt  = trig_pt;
-                  best_matching_path_eta = trig_eta;
-                }
-	      }
-	    }
-	  }
-	}
-
-	for (unsigned i = 0; i < nTrigPaths; ++i) {
-
-	  if((int)i==best_matching_path_idx){
-	    TriggerMatches[i] = 1;
-            TriggerPathDR[i]  = best_matching_path_dr;
-            TriggerPathPt[i]  = best_matching_path_pt;
-            TriggerPathEta[i] = best_matching_path_eta;
-          }
-	  else{
-	    TriggerMatches[i] = 0;
-            TriggerPathDR[i]  = -9999.;
-            TriggerPathPt[i]  = -9999.;
-            TriggerPathEta[i] = -9999.;
-          }	
-        }
-
 
 	reco::Vertex refitted_vertex_best = thePrimaryV;
 
