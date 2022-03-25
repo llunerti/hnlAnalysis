@@ -29,6 +29,8 @@
 //// gen ??
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 
+#include "DataFormats/Math/interface/deltaR.h"
+
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -98,8 +100,8 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     std::vector<float> *C_Hnl_vertex_cos2D;
 
     std::vector<float> *C_mu1_px, *C_mu1_py, *C_mu1_pz;
-    std::vector<float> *C_mu1_PAT_pt;
     std::vector<float> *C_mu1_eta;
+    std::vector<float> *C_mu1_phi;
     std::vector<float> *C_mu1_BS_ips_xy, *C_mu1_PV_ips_z;
     std::vector<float> *C_mu1_BS_ips;
     std::vector<float> *C_mu1_BS_ip_xy, *C_mu1_PV_ip_z;
@@ -108,27 +110,37 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     std::vector<short> *C_mu1_isSoft;
     std::vector<short> *C_mu1_isLoose;
     std::vector<short> *C_mu1_isMedium;
+    std::vector<short> *C_mu1_isGlobal;
+    std::vector<short> *C_mu1_isTracker;
+    std::vector<short> *C_mu1_isStandAlone;
     std::vector<short> *C_mu1_isMCMatched;
 
-    std::vector<float> *C_mu2_px, *C_mu2_py, *C_mu2_pz;
-    std::vector<float> *C_mu2_PAT_pt;
-    std::vector<float> *C_mu2_eta;
-    std::vector<float> *C_mu2_BS_ips_xy, *C_mu2_PV_ips_z;
-    std::vector<float> *C_mu2_BS_ips;
-    std::vector<float> *C_mu2_BS_ip_xy, *C_mu2_PV_ip_z;
-    std::vector<float> *C_mu2_BS_ip;
-    std::vector<int>   *C_mu2_charge;
-    std::vector<short> *C_mu2_isSoft;
-    std::vector<short> *C_mu2_isLoose;
-    std::vector<short> *C_mu2_isMedium;
-    std::vector<short> *C_mu2_isMCMatched;
+    std::vector<float> *C_trigMu_px, *C_trigMu_py, *C_trigMu_pz;
+    std::vector<float> *C_trigMu_eta;
+    std::vector<float> *C_trigMu_phi;
+    std::vector<float> *C_trigMu_BS_ips_xy, *C_trigMu_PV_ips_z;
+    std::vector<float> *C_trigMu_BS_ips;
+    std::vector<float> *C_trigMu_BS_ip_xy, *C_trigMu_PV_ip_z;
+    std::vector<float> *C_trigMu_BS_ip;
+    std::vector<int>   *C_trigMu_charge;
+    std::vector<short> *C_trigMu_isSoft;
+    std::vector<short> *C_trigMu_isLoose;
+    std::vector<short> *C_trigMu_isMedium;
+    std::vector<short> *C_trigMu_isGlobal;
+    std::vector<short> *C_trigMu_isTracker;
+    std::vector<short> *C_trigMu_isStandAlone;
+    std::vector<short> *C_trigMu_isMCMatched;
 
     std::vector<float> *C_mass;
     std::vector<float> *C_mu1mu2_mass;
+    std::vector<float> *C_mu1mu2_dr;
+    std::vector<float> *C_mu1pi_dr;
+    std::vector<float> *C_mu2pi_dr;
     std::vector<int>   *C_pi_charge;
     std::vector<float> *C_px, *C_py, *C_pz;
     std::vector<float> *C_pi_px, *C_pi_py, *C_pi_pz;
     std::vector<float> *C_pi_eta;
+    std::vector<float> *C_pi_phi;
     std::vector<float> *C_pi_BS_ips_xy, *C_pi_BS_ips_z;
     std::vector<float> *C_pi_BS_ip_xy, *C_pi_BS_ip_z;
     std::vector<short> *C_pi_isMCMatched;
@@ -196,7 +208,7 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
 
     std::vector<short>  *C_pi_isHnlDaughter;
     std::vector<short>  *C_mu1_isHnlDaughter;
-    std::vector<short>  *C_mu2_isHnlBrother;
+    std::vector<short>  *C_trigMu_isHnlBrother;
 
     Int_t nCand;
 
@@ -218,27 +230,26 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
 
 
 hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
-  hlTriggerResults_ (consumes<edm::TriggerResults> (iConfig.getParameter<edm::InputTag>("HLTriggerResults"))),
-  hlTriggerObjects_ (consumes<pat::TriggerObjectStandAloneCollection> (iConfig.getParameter<edm::InputTag>("HLTriggerObjects"))),
-  prunedGenToken_   (consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("prunedGenParticleTag"))),
-  packedGenToken_   (consumes<std::vector<pat::PackedGenParticle>>(iConfig.getParameter<edm::InputTag>("packedGenParticleTag"))),
-  beamSpotToken_    (consumes<reco::BeamSpot> (iConfig.getParameter<edm::InputTag>("beamSpotTag"))),
-  vtxSample         (consumes<reco::VertexCollection> (iConfig.getParameter<edm::InputTag>("VtxSample"))),
-  tracks_           (consumes<std::vector<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("Track"))),
-  //lostTracks_       (consumes<std::vector<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("lostTracks"))),
-  muons_            (consumes<std::vector<pat::Muon>> (iConfig.getParameter<edm::InputTag>("muons"))),
-  PUInfoToken_      (consumes<std::vector<PileupSummaryInfo>> (iConfig.getParameter<edm::InputTag>("PUInfoTag"))),
-  mu_pt_cut_        (iConfig.getUntrackedParameter<double>("mu_pt_cut" )),
-  mu_eta_cut_       (iConfig.getUntrackedParameter<double>("mu_eta_cut")),
-  trigMu_pt_cut_    (iConfig.getUntrackedParameter<double>("trigMu_pt_cut" )),
-  trigMu_eta_cut_   (iConfig.getUntrackedParameter<double>("trigMu_eta_cut")),
-  pi_pt_cut_        (iConfig.getUntrackedParameter<double>("pi_pt_cut" )),
-  pi_eta_cut_       (iConfig.getUntrackedParameter<double>("pi_eta_cut")),
-  mumupi_mass_cut_  (iConfig.getUntrackedParameter<double>("b_mass_cut")),
+  hlTriggerResults_  (consumes<edm::TriggerResults> (iConfig.getParameter<edm::InputTag>("HLTriggerResults"))),
+  hlTriggerObjects_  (consumes<pat::TriggerObjectStandAloneCollection> (iConfig.getParameter<edm::InputTag>("HLTriggerObjects"))),
+  prunedGenToken_    (consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("prunedGenParticleTag"))),
+  packedGenToken_    (consumes<std::vector<pat::PackedGenParticle>>(iConfig.getParameter<edm::InputTag>("packedGenParticleTag"))),
+  beamSpotToken_     (consumes<reco::BeamSpot> (iConfig.getParameter<edm::InputTag>("beamSpotTag"))),
+  vtxSample          (consumes<reco::VertexCollection> (iConfig.getParameter<edm::InputTag>("VtxSample"))),
+  tracks_            (consumes<std::vector<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("Track"))),
+  muons_             (consumes<std::vector<pat::Muon>> (iConfig.getParameter<edm::InputTag>("muons"))),
+  PUInfoToken_       (consumes<std::vector<PileupSummaryInfo>> (iConfig.getParameter<edm::InputTag>("PUInfoTag"))),
+  mu_pt_cut_         (iConfig.getUntrackedParameter<double>("mu_pt_cut" )),
+  mu_eta_cut_        (iConfig.getUntrackedParameter<double>("mu_eta_cut")),
+  trigMu_pt_cut_     (iConfig.getUntrackedParameter<double>("trigMu_pt_cut" )),
+  trigMu_eta_cut_    (iConfig.getUntrackedParameter<double>("trigMu_eta_cut")),
+  pi_pt_cut_         (iConfig.getUntrackedParameter<double>("pi_pt_cut" )),
+  pi_eta_cut_        (iConfig.getUntrackedParameter<double>("pi_eta_cut")),
+  mumupi_mass_cut_   (iConfig.getUntrackedParameter<double>("b_mass_cut")),
   mupi_mass_high_cut_(iConfig.getUntrackedParameter<double>("mupi_mass_high_cut")),
-  mupi_mass_low_cut_(iConfig.getUntrackedParameter<double>("mupi_mass_low_cut")),
-  mupi_pt_cut_      (iConfig.getUntrackedParameter<double>("mupi_pt_cut")),
-  vtx_prob_cut_     (iConfig.getUntrackedParameter<double>("vtx_prob_cut")),
+  mupi_mass_low_cut_ (iConfig.getUntrackedParameter<double>("mupi_mass_low_cut")),
+  mupi_pt_cut_       (iConfig.getUntrackedParameter<double>("mupi_pt_cut")),
+  vtx_prob_cut_      (iConfig.getUntrackedParameter<double>("vtx_prob_cut")),
 
   C_Hnl_vertex_prob(0),
   C_Hnl_mass(0),
@@ -259,8 +270,8 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   C_mu1_px(0),
   C_mu1_py(0),       
   C_mu1_pz(0),
-  C_mu1_PAT_pt(0),
   C_mu1_eta(0),
+  C_mu1_phi(0),
   C_mu1_BS_ips_xy(0),
   C_mu1_PV_ips_z(0),
   C_mu1_BS_ips(0),
@@ -271,27 +282,36 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   C_mu1_isSoft(0),
   C_mu1_isLoose(0),
   C_mu1_isMedium(0),
+  C_mu1_isGlobal(0),
+  C_mu1_isTracker(0),
+  C_mu1_isStandAlone(0),
   C_mu1_isMCMatched(0),
 
-  C_mu2_px(0),
-  C_mu2_py(0),
-  C_mu2_pz(0),
-  C_mu2_PAT_pt(0),
-  C_mu2_eta(0),
-  C_mu2_BS_ips_xy(0),
-  C_mu2_PV_ips_z(0),
-  C_mu2_BS_ips(0),
-  C_mu2_BS_ip_xy(0),
-  C_mu2_PV_ip_z(0),
-  C_mu2_BS_ip(0),
-  C_mu2_charge(0),
-  C_mu2_isSoft(0),
-  C_mu2_isLoose(0),
-  C_mu2_isMedium(0),
-  C_mu2_isMCMatched(0),
+  C_trigMu_px(0),
+  C_trigMu_py(0),
+  C_trigMu_pz(0),
+  C_trigMu_eta(0),
+  C_trigMu_phi(0),
+  C_trigMu_BS_ips_xy(0),
+  C_trigMu_PV_ips_z(0),
+  C_trigMu_BS_ips(0),
+  C_trigMu_BS_ip_xy(0),
+  C_trigMu_PV_ip_z(0),
+  C_trigMu_BS_ip(0),
+  C_trigMu_charge(0),
+  C_trigMu_isSoft(0),
+  C_trigMu_isLoose(0),
+  C_trigMu_isMedium(0),
+  C_trigMu_isGlobal(0),
+  C_trigMu_isTracker(0),
+  C_trigMu_isStandAlone(0),
+  C_trigMu_isMCMatched(0),
 
   C_mass(0),
   C_mu1mu2_mass(0),
+  C_mu1mu2_dr(0),
+  C_mu1pi_dr(0),
+  C_mu2pi_dr(0),
   C_pi_charge(0),
   C_px(0),
   C_py(0),
@@ -300,6 +320,7 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   C_pi_py(0),
   C_pi_pz(0),
   C_pi_eta(0),
+  C_pi_phi(0),
   C_pi_BS_ips_xy(0),
   C_pi_BS_ips_z(0),
   C_pi_BS_ip_xy(0),
@@ -367,7 +388,7 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
 
   C_pi_isHnlDaughter(0),
   C_mu1_isHnlDaughter(0),
-  C_mu2_isHnlBrother(0),
+  C_trigMu_isHnlBrother(0),
 
   nCand(0),
 
@@ -517,40 +538,53 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   KinematicParticleFactoryFromTransientTrack pFactory;
 
 
-  //add third muon------------------
-  for ( std::vector<pat::Muon>::const_iterator iMuon2 = thePATMuonHandle->begin(); iMuon2 != thePATMuonHandle->end(); ++iMuon2){
+  //trigger muon
+  //for ( std::vector<pat::Muon>::const_iterator iTrigMuon = thePATMuonHandle->begin(); iTrigMuon != thePATMuonHandle->end(); ++iTrigMuon){
+  for ( unsigned i=0; i<thePATMuonHandle->size(); ++i){
+
+    const pat::Muon* iTrigMuon = &(*thePATMuonHandle).at(i);
 
     //cut on muon pt and eta
-    if(iMuon2->pt() < trigMu_pt_cut_) continue;
-    if(std::abs(iMuon2->eta()) > trigMu_eta_cut_)  continue;
+    if(iTrigMuon->pt() < trigMu_pt_cut_) continue;
+    if(std::abs(iTrigMuon->eta()) > trigMu_eta_cut_)  continue;
 
     //save muon id info
-    bool isSoftMuon2 = false;
-    bool isLooseMuon2 = false;
-    bool isMediumMuon2 = false;
+    bool isSoftTrigMuon = false;
+    bool isLooseTrigMuon = false;
+    bool isMediumTrigMuon = false;
 
-    if (iMuon2->isSoftMuon(thePrimaryV)) isSoftMuon2=true;
-    if (iMuon2->isLooseMuon())           isLooseMuon2=true;
-    if (iMuon2->isMediumMuon())          isMediumMuon2=true;
+    if (iTrigMuon->isSoftMuon(thePrimaryV)) isSoftTrigMuon=true;
+    if (iTrigMuon->isLooseMuon())           isLooseTrigMuon=true;
+    if (iTrigMuon->isMediumMuon())          isMediumTrigMuon=true;
+
+    //save muon track info
+    bool isGlobalTrigMuon = false;
+    bool isTrackerTrigMuon = false;
+    bool isStandAloneTrigMuon = false;
+
+    if (iTrigMuon->isGlobalMuon())     isGlobalTrigMuon = true;
+    if (iTrigMuon->isTrackerMuon())    isTrackerTrigMuon = true;
+    if (iTrigMuon->isStandAloneMuon()) isStandAloneTrigMuon = true;
 
 
-    TrackRef glbTrackMu2;
-    glbTrackMu2 = iMuon2->track();
-    if (glbTrackMu2.isNull())  continue;
-    if (!(glbTrackMu2->quality(reco::TrackBase::highPurity)))  continue;
+    TrackRef inTrackMu2;
+    inTrackMu2 = iTrigMuon->track();
+    if (inTrackMu2.isNull())  continue;
+    if (!(inTrackMu2->quality(reco::TrackBase::highPurity)))  continue;
 
     TLorentzVector p4mu2;
-    p4mu2.SetPtEtaPhiM(iMuon2->pt(), iMuon2->eta(), iMuon2->phi(), pdg.PDG_MUON_MASS);
+    p4mu2.SetPtEtaPhiM(iTrigMuon->pt(), iTrigMuon->eta(), iTrigMuon->phi(), pdg.PDG_MUON_MASS);
 
     bool is_hnl_brother = false;
-    bool isMCMatchedMuon2 = false;
+    bool isMCMatchedTrigMuon = false;
 
+    //mc matching for signal particles
     if(run==1){
-      int match_mu2_idx = getMatchedGenPartIdx(iMuon2->pt(),iMuon2->eta(),iMuon2->phi(),13,*packedGenParticleCollection);
+      int match_trigMu_idx = getMatchedGenPartIdx(iTrigMuon->pt(),iTrigMuon->eta(),iTrigMuon->phi(),13,*packedGenParticleCollection);
 
-      if (match_mu2_idx>0){
-	isMCMatchedMuon2 = true;
-	pat::PackedGenParticle matchedGenMuon = (*packedGenParticleCollection).at(match_mu2_idx);
+      if (match_trigMu_idx>0){
+	isMCMatchedTrigMuon = true;
+	pat::PackedGenParticle matchedGenMuon = (*packedGenParticleCollection).at(match_trigMu_idx);
 	if (matchedGenMuon.motherRef().isNonnull() &&
 	    matchedGenMuon.motherRef().isAvailable()){
 	  const reco::Candidate* genMuonMom = matchedGenMuon.mother(0);
@@ -566,27 +600,25 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
     for (unsigned i = 0; i < nTrigPaths; ++i) {
 
-      //int   best_matching_path_idx = -9999;
       bool match = false;
       float best_matching_path_dr  = -9999.;
       float best_matching_path_pt  = -9999.;
       float best_matching_path_eta = -9999.;
+      float min_dr = 9999.;
 
-      if(iMuon2->triggerObjectMatches().size()!=0){
+      if(iTrigMuon->triggerObjectMatches().size()!=0){
 
 	//loop over trigger object matched to muon
-	for(size_t j=0; j<iMuon2->triggerObjectMatches().size();j++){
-          float min_dr = 9999.;
+	for(size_t j=0; j<iTrigMuon->triggerObjectMatches().size();j++){
 
-	  if(iMuon2->triggerObjectMatch(j)!=0 && iMuon2->triggerObjectMatch(j)->hasPathName(TriggerPaths[i],true,true)){
+	  if(iTrigMuon->triggerObjectMatch(j)!=0 && iTrigMuon->triggerObjectMatch(j)->hasPathName(TriggerPaths[i],true,true)){
 
-	    float trig_dr  = reco::deltaR(iMuon2->triggerObjectMatch(j)->p4(), iMuon2->p4()); 
-	    float trig_pt  = iMuon2->triggerObjectMatch(j)->pt();                   
-	    float trig_eta = iMuon2->triggerObjectMatch(j)->eta();                   
+	    float trig_dr  = reco::deltaR(iTrigMuon->triggerObjectMatch(j)->p4(), iTrigMuon->p4()); 
+	    float trig_pt  = iTrigMuon->triggerObjectMatch(j)->pt();                   
+	    float trig_eta = iTrigMuon->triggerObjectMatch(j)->eta();                   
 
 	    //select the match with smallest dR
 	    if (trig_dr<min_dr){
-	      //best_matching_path_idx = i;
 	      match = true;
 	      min_dr = trig_dr;
 	      best_matching_path_dr  = trig_dr;
@@ -604,76 +636,91 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
     }
 
-    for (std::vector<pat::PackedCandidate>::const_iterator iTrack1 = thePATTrackHandle->begin(); iTrack1 != thePATTrackHandle->end(); ++iTrack1){
-
-      if (IsTheSame(*iTrack1,*iMuon2) ) continue;
-
-      //Nota bene: if you want to use dxy or dz you need to be sure 
-      //the pt of the tracks is bigger than 0.5 GeV, otherwise you 
-      //will get an error related to covariance matrix.
-      //Next lines are very recommended
-
-      if(iTrack1->pt() <= pi_pt_cut_) continue;
-      if(std::abs(iTrack1->eta()) > pi_pt_cut_) continue;
-      if(iTrack1->charge()==0) continue;// NO neutral objects
-      if(std::abs(iTrack1->pdgId())!=211) continue;//Due to the lack of the particle ID all the tracks for cms are pions(ID==211)
-      if(!(iTrack1->trackHighPurity())) continue; 
 
 
-      bool hnl_pi_match = false;
-      bool isMCMatchedTrack1 = false;
+    //for ( std::vector<pat::Muon>::const_iterator iMuon1 = thePATMuonHandle->begin(); iMuon1 != thePATMuonHandle->end(); ++iMuon1){
+    for ( unsigned j=0; j<thePATMuonHandle->size(); ++j){
+      if (i==j) continue;
+    //for ( unsigned j=i+1; j<thePATMuonHandle->size(); ++j){
 
-      if(run==1){
-	int match_pi_idx = getMatchedGenPartIdx(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(),211,*packedGenParticleCollection);
 
-	if (match_pi_idx>0){
-	  isMCMatchedTrack1 = true;
-	  pat::PackedGenParticle matchedGenPi = (*packedGenParticleCollection).at(match_pi_idx);
-	  if (matchedGenPi.motherRef().isNonnull() &&
-	      matchedGenPi.motherRef().isAvailable() &&
-	      std::abs(matchedGenPi.mother(0)->pdgId()) == 9900015 ){
-	    hnl_pi_match=true;
+      //if (IsTheSame(*iMuon1,*iTrigMuon) ) continue;
+      const pat::Muon* iMuon1 = &(*thePATMuonHandle).at(j);
+
+      //cuts on muon pt and eta
+      if (iMuon1->pt() < mu_pt_cut_) continue;
+      if (std::abs(iMuon1->eta()) > mu_eta_cut_)  continue;
+
+      //save muon id info
+      bool isSoftMuon1 = false;
+      bool isLooseMuon1 = false;
+      bool isMediumMuon1 = false;
+
+      if (iMuon1->isSoftMuon(thePrimaryV)) isSoftMuon1=true;
+      if (iMuon1->isLooseMuon())           isLooseMuon1=true;
+      if (iMuon1->isMediumMuon())          isMediumMuon1=true;
+
+      //save muon track info
+      bool isGlobalMuon1 = false;
+      bool isTrackerMuon1 = false;
+      bool isStandAloneMuon1 = false;
+
+      if (iMuon1->isGlobalMuon())     isGlobalMuon1 = true;
+      if (iMuon1->isTrackerMuon())    isTrackerMuon1 = true;
+      if (iMuon1->isStandAloneMuon()) isStandAloneMuon1 = true;
+
+      //cuts on muon track
+      TrackRef inTrackMu1;
+      inTrackMu1 = iMuon1->track();
+      if( inTrackMu1.isNull())  continue;
+      if(!(inTrackMu1->quality(reco::TrackBase::highPurity)))  continue;
+
+      for (std::vector<pat::PackedCandidate>::const_iterator iTrack1 = thePATTrackHandle->begin(); iTrack1 != thePATTrackHandle->end(); ++iTrack1){
+
+	//if (IsTheSame(*iTrack1,*iTrigMuon) ) continue;
+        //if (IsTheSame(*iTrack1,*iMuon1) ) continue;
+
+	//Nota bene: if you want to use dxy or dz you need to be sure 
+	//the pt of the tracks is bigger than 0.5 GeV, otherwise you 
+	//will get an error related to covariance matrix.
+	//Next lines are very recommended
+
+	if(iTrack1->pt() <= pi_pt_cut_) continue;
+	if(std::abs(iTrack1->eta()) > pi_eta_cut_) continue;
+	if(iTrack1->charge()==0) continue;// NO neutral objects
+	if(std::abs(iTrack1->pdgId())!=211) continue;//Due to the lack of the particle ID all the tracks for cms are pions(ID==211)
+	if(!(iTrack1->trackHighPurity())) continue; 
+
+
+	bool hnl_pi_match = false;
+	bool isMCMatchedTrack1 = false;
+
+	if(run==1){
+	  int match_pi_idx = getMatchedGenPartIdx(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(),211,*packedGenParticleCollection);
+
+	  if (match_pi_idx>0){
+	    isMCMatchedTrack1 = true;
+	    pat::PackedGenParticle matchedGenPi = (*packedGenParticleCollection).at(match_pi_idx);
+	    if (matchedGenPi.motherRef().isNonnull() &&
+		matchedGenPi.motherRef().isAvailable() &&
+		std::abs(matchedGenPi.mother(0)->pdgId()) == 9900015 ){
+	      hnl_pi_match=true;
+	    }
 	  }
 	}
-      }
-
-
-      for ( std::vector<pat::Muon>::const_iterator iMuon1 = thePATMuonHandle->begin(); iMuon1 != thePATMuonHandle->end(); ++iMuon1){
-
-	if (IsTheSame(*iTrack1,*iMuon1) ) continue;
-        if (IsTheSame(*iMuon1,*iMuon2) ) continue;
-
-	//cuts on muon pt and eta
-	if (iMuon1->pt() < mu_pt_cut_) continue;
-	if (std::abs(iMuon1->eta()) > mu_eta_cut_)  continue;
-
-	//save muon id info
-	bool isSoftMuon1 = false;
-	bool isLooseMuon1 = false;
-	bool isMediumMuon1 = false;
-
-	if (iMuon1->isSoftMuon(thePrimaryV)) isSoftMuon1=true;
-	if (iMuon1->isLooseMuon())           isLooseMuon1=true;
-	if (iMuon1->isMediumMuon())          isMediumMuon1=true;
-
-	//cuts on muon track
-	TrackRef glbTrackMu1;
-	glbTrackMu1 = iMuon1->track();
-	if( glbTrackMu1.isNull())  continue;
-	if(!(glbTrackMu1->quality(reco::TrackBase::highPurity)))  continue;
 
 	//cuts on mupi mass and pt
 	TLorentzVector p4mu1,p4pi1;
 	p4pi1.SetPtEtaPhiM(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(), pdg.PDG_PION_MASS);
 	p4mu1.SetPtEtaPhiM(iMuon1->pt(), iMuon1->eta(), iMuon1->phi(), pdg.PDG_MUON_MASS);
 
-        if ((p4mu1 + p4mu2 + p4pi1).M() > mumupi_mass_cut_) continue;
+	if ((p4mu1 + p4mu2 + p4pi1).M() > mumupi_mass_cut_) continue;
 	if ((p4mu1 + p4pi1).M() >  mupi_mass_high_cut_) continue;
 	if ((p4mu1 + p4pi1).M() <  mupi_mass_low_cut_) continue;
 	if ((p4mu1 + p4pi1).Pt() <  mupi_pt_cut_) continue;
 
 
-	TransientTrack muon1TT((*TTrackBuilder).build(glbTrackMu1));
+	TransientTrack muon1TT((*TTrackBuilder).build(inTrackMu1));
 	TransientTrack pion1TT((*TTrackBuilder).build(iTrack1->pseudoTrack()));
 
 
@@ -691,17 +738,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	hnlParticles.push_back(pFactory.particle(pion1TT, pdg.PM_PDG_PION_MASS, chi, ndf, muon_sigma));
 	KinematicParticleVertexFitter hnlToPiMu_vertexFitter;
 	RefCountedKinematicTree hnlToPiMu_kinTree;
-	int fitgood = 1;
-	try
-	{
-	  hnlToPiMu_kinTree = hnlToPiMu_vertexFitter.fit(hnlParticles);
-	}
-	catch (VertexException eee)
-	{
-	  fitgood = 0;
-	}
-	if (fitgood == 0) continue;
-
+	hnlToPiMu_kinTree = hnlToPiMu_vertexFitter.fit(hnlParticles);
 
 	if (!hnlToPiMu_kinTree->isValid()) continue;
 
@@ -761,7 +798,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 	   for (std::vector<TrackBaseRef>::const_iterator iTrack = recoVertex.tracks_begin(); iTrack != recoVertex.tracks_end(); ++iTrack) {
 	   TrackRef trackRef = iTrack->castTo<TrackRef>();
-	   if (!(glbTrackMu1==trackRef || iTrack1->bestTrack()==trackRef.get()))
+	   if (!(inTrackMu1==trackRef || iTrack1->bestTrack()==trackRef.get()))
 	   {
 	   TransientTrack tt(trackRef, &(*bFieldHandle));
 	   vertexTransientTracks_refit.push_back(tt);
@@ -850,8 +887,8 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	C_mu1_px ->push_back(p4mu1.Px());
 	C_mu1_py ->push_back(p4mu1.Py());
 	C_mu1_pz ->push_back(p4mu1.Pz());
-	C_mu1_PAT_pt ->push_back(iMuon1->pt());
 	C_mu1_eta ->push_back(p4mu1.Eta());
+	C_mu1_phi ->push_back(p4mu1.Phi());
 	C_mu1_BS_ips_xy ->push_back(iMuon1->dB(pat::Muon::BS2D)/iMuon1->edB(pat::Muon::BS2D));
 	C_mu1_BS_ips    ->push_back(iMuon1->dB(pat::Muon::BS3D)/iMuon1->edB(pat::Muon::BS3D));
 	C_mu1_PV_ips_z  ->push_back(iMuon1->dB(pat::Muon::PVDZ)/iMuon1->edB(pat::Muon::PVDZ));
@@ -863,32 +900,39 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	C_mu1_isSoft   ->push_back(isSoftMuon1? 1: 0);
 	C_mu1_isLoose  ->push_back(isLooseMuon1? 1: 0);
 	C_mu1_isMedium ->push_back(isMediumMuon1? 1: 0);
+	C_mu1_isGlobal   ->push_back(isGlobalMuon1? 1: 0);
+	C_mu1_isTracker  ->push_back(isTrackerMuon1? 1: 0);
+	C_mu1_isStandAlone ->push_back(isStandAloneMuon1? 1: 0);
 	C_mu1_isMCMatched ->push_back(isMCMatchedMuon1? 1: 0);
 
 
-	C_mu2_px ->push_back(p4mu2.Px());
-	C_mu2_py ->push_back(p4mu2.Py());
-	C_mu2_pz ->push_back(p4mu2.Pz());
-	C_mu2_PAT_pt ->push_back(iMuon2->pt());
-	C_mu2_eta ->push_back(p4mu2.Eta());
-	C_mu2_BS_ips_xy ->push_back(iMuon2->dB(pat::Muon::BS2D)/iMuon2->edB(pat::Muon::BS2D));
-	C_mu2_BS_ips    ->push_back(iMuon2->dB(pat::Muon::BS3D)/iMuon2->edB(pat::Muon::BS3D));
-	C_mu2_PV_ips_z  ->push_back(iMuon2->dB(pat::Muon::PVDZ)/iMuon2->edB(pat::Muon::PVDZ));
-	C_mu2_BS_ip_xy  ->push_back(iMuon2->dB(pat::Muon::BS2D));
-	C_mu2_BS_ip     ->push_back(iMuon2->dB(pat::Muon::BS3D));
-	C_mu2_PV_ip_z   ->push_back(iMuon2->dB(pat::Muon::PVDZ));
-	C_mu2_charge ->push_back(iMuon2->charge());
-	C_mu2_isHnlBrother->push_back(is_hnl_brother ? 1 : 0);
-	C_mu2_isSoft   ->push_back(isSoftMuon2? 1: 0);
-	C_mu2_isLoose  ->push_back(isLooseMuon2? 1: 0);
-	C_mu2_isMedium ->push_back(isMediumMuon2? 1: 0);
-	C_mu2_isMCMatched ->push_back(isMCMatchedMuon2? 1: 0);
+	C_trigMu_px ->push_back(p4mu2.Px());
+	C_trigMu_py ->push_back(p4mu2.Py());
+	C_trigMu_pz ->push_back(p4mu2.Pz());
+	C_trigMu_eta ->push_back(p4mu2.Eta());
+	C_trigMu_phi ->push_back(p4mu2.Phi());
+	C_trigMu_BS_ips_xy ->push_back(iTrigMuon->dB(pat::Muon::BS2D)/iTrigMuon->edB(pat::Muon::BS2D));
+	C_trigMu_BS_ips    ->push_back(iTrigMuon->dB(pat::Muon::BS3D)/iTrigMuon->edB(pat::Muon::BS3D));
+	C_trigMu_PV_ips_z  ->push_back(iTrigMuon->dB(pat::Muon::PVDZ)/iTrigMuon->edB(pat::Muon::PVDZ));
+	C_trigMu_BS_ip_xy  ->push_back(iTrigMuon->dB(pat::Muon::BS2D));
+	C_trigMu_BS_ip     ->push_back(iTrigMuon->dB(pat::Muon::BS3D));
+	C_trigMu_PV_ip_z   ->push_back(iTrigMuon->dB(pat::Muon::PVDZ));
+	C_trigMu_charge ->push_back(iTrigMuon->charge());
+	C_trigMu_isHnlBrother->push_back(is_hnl_brother ? 1 : 0);
+	C_trigMu_isSoft   ->push_back(isSoftTrigMuon? 1: 0);
+	C_trigMu_isLoose  ->push_back(isLooseTrigMuon? 1: 0);
+	C_trigMu_isMedium ->push_back(isMediumTrigMuon? 1: 0);
+	C_trigMu_isGlobal   ->push_back(isGlobalTrigMuon? 1: 0);
+	C_trigMu_isTracker  ->push_back(isTrackerTrigMuon? 1: 0);
+	C_trigMu_isStandAlone ->push_back(isStandAloneTrigMuon? 1: 0);
+	C_trigMu_isMCMatched ->push_back(isMCMatchedTrigMuon? 1: 0);
 
 	C_pi_charge ->push_back(iTrack1->charge());
 	C_pi_px ->push_back(p4pi1.Px());
 	C_pi_py ->push_back(p4pi1.Py());
 	C_pi_pz ->push_back(p4pi1.Pz());
 	C_pi_eta ->push_back(p4pi1.Eta());
+	C_pi_phi ->push_back(p4pi1.Phi());
 	C_pi_BS_ips_xy->push_back(std::abs(iTrack1->dxy((*theBeamSpot).position()))/std::abs(iTrack1->dxyError()));
 	C_pi_BS_ips_z ->push_back(std::abs(iTrack1->dz ((*theBeamSpot).position()))/std::abs(iTrack1->dzError()));
 	C_pi_BS_ip_xy ->push_back(std::abs(iTrack1->dxy((*theBeamSpot).position())));
@@ -898,6 +942,9 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 	C_mass->push_back((p4mu1 + p4mu2 + p4pi1).M());
 	C_mu1mu2_mass->push_back((p4mu1 + p4mu2).M());
+	C_mu1mu2_dr->push_back(deltaR(*iMuon1,*iTrigMuon));
+	C_mu1pi_dr->push_back(deltaR(*iMuon1,*iTrack1));
+	C_mu2pi_dr->push_back(deltaR(*iTrigMuon,*iTrack1));
 	C_px ->push_back((p4mu1 + p4mu2 + p4pi1).Px());
 	C_py ->push_back((p4mu1 + p4mu2 + p4pi1).Py());
 	C_pz ->push_back((p4mu1 + p4mu2 + p4pi1).Pz());
@@ -955,23 +1002,23 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	mu10p5_ip3p5_dr->push_back(TriggerPathDR[8]);
 	mu12_ip6_dr->push_back(TriggerPathDR[9]);
 
-	mu7_ip4_fired->push_back(TriggerMatches[0]);
-	mu8_ip3_fired->push_back(TriggerMatches[1]);
-	mu8_ip3p5_fired ->push_back(TriggerMatches[2]);
-	mu8_ip5_fired->push_back(TriggerMatches[3]);
-	mu8_ip6_fired->push_back(TriggerMatches[4]);
-	mu9_ip4_fired->push_back(TriggerMatches[5]);
-	mu9_ip5_fired->push_back(TriggerMatches[6]);
-	mu9_ip6_fired->push_back(TriggerMatches[7]);
-	mu10p5_ip3p5_fired->push_back(TriggerMatches[8]);
-	mu12_ip6_fired->push_back(TriggerMatches[9]);
+	mu7_ip4_fired->push_back(TriggersFired[0]);
+	mu8_ip3_fired->push_back(TriggersFired[1]);
+	mu8_ip3p5_fired ->push_back(TriggersFired[2]);
+	mu8_ip5_fired->push_back(TriggersFired[3]);
+	mu8_ip6_fired->push_back(TriggersFired[4]);
+	mu9_ip4_fired->push_back(TriggersFired[5]);
+	mu9_ip5_fired->push_back(TriggersFired[6]);
+	mu9_ip6_fired->push_back(TriggersFired[7]);
+	mu10p5_ip3p5_fired->push_back(TriggersFired[8]);
+	mu12_ip6_fired->push_back(TriggersFired[9]);
 
-	nCand ++;
+	++nCand;
 
 	hnlParticles.clear();
-      } // muon from b
-    } // muon from hnl
-  } // pi from hnl
+      } 
+    } 
+  } 
 
 
   // ===================== END OF EVENT : WRITE ETC ++++++++++++++++++++++
@@ -979,7 +1026,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   if (nCand > 0)
   {
     cout << "_____________________ SUCCESS!!!! _______________________" << endl;
-    N_written_events++;
+    ++N_written_events;
     cout << N_written_events << " candidates are written to the file now " << endl;
     cout << endl;
 
@@ -1005,8 +1052,8 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   C_mu1_px->clear();
   C_mu1_py->clear();
   C_mu1_pz->clear();
-  C_mu1_PAT_pt->clear();
   C_mu1_eta->clear();
+  C_mu1_phi->clear();
   C_mu1_BS_ips_xy->clear();
   C_mu1_BS_ips->clear();
   C_mu1_PV_ips_z->clear();
@@ -1017,27 +1064,36 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   C_mu1_isSoft->clear();
   C_mu1_isLoose->clear();
   C_mu1_isMedium->clear();
+  C_mu1_isGlobal->clear();
+  C_mu1_isTracker->clear();
+  C_mu1_isStandAlone->clear();
   C_mu1_isMCMatched->clear();
 
-  C_mu2_px->clear();
-  C_mu2_py->clear();
-  C_mu2_pz->clear();
-  C_mu2_PAT_pt->clear();
-  C_mu2_eta->clear();
-  C_mu2_BS_ips_xy->clear();
-  C_mu2_BS_ips->clear();
-  C_mu2_PV_ips_z->clear();
-  C_mu2_BS_ip_xy->clear();
-  C_mu2_BS_ip->clear();
-  C_mu2_PV_ip_z->clear();
-  C_mu2_charge->clear();
-  C_mu2_isSoft->clear();
-  C_mu2_isLoose->clear();
-  C_mu2_isMedium->clear();
-  C_mu2_isMCMatched->clear();
+  C_trigMu_px->clear();
+  C_trigMu_py->clear();
+  C_trigMu_pz->clear();
+  C_trigMu_eta->clear();
+  C_trigMu_phi->clear();
+  C_trigMu_BS_ips_xy->clear();
+  C_trigMu_BS_ips->clear();
+  C_trigMu_PV_ips_z->clear();
+  C_trigMu_BS_ip_xy->clear();
+  C_trigMu_BS_ip->clear();
+  C_trigMu_PV_ip_z->clear();
+  C_trigMu_charge->clear();
+  C_trigMu_isSoft->clear();
+  C_trigMu_isLoose->clear();
+  C_trigMu_isMedium->clear();
+  C_trigMu_isGlobal->clear();
+  C_trigMu_isTracker->clear();
+  C_trigMu_isStandAlone->clear();
+  C_trigMu_isMCMatched->clear();
   //
   C_mass->clear();
   C_mu1mu2_mass->clear();
+  C_mu1mu2_dr->clear();
+  C_mu1pi_dr->clear();
+  C_mu2pi_dr->clear();
   C_pi_charge->clear();
   C_px->clear();
   C_py->clear();
@@ -1046,6 +1102,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   C_pi_py->clear();
   C_pi_pz->clear();
   C_pi_eta->clear();
+  C_pi_phi->clear();
   C_pi_BS_ips_xy->clear();
   C_pi_BS_ips_z->clear();
   C_pi_BS_ip_xy->clear();
@@ -1113,7 +1170,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
   C_pi_isHnlDaughter->clear();
   C_mu1_isHnlDaughter->clear();
-  C_mu2_isHnlBrother->clear();
+  C_trigMu_isHnlBrother->clear();
 
 
 }
@@ -1196,8 +1253,8 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("C_mu1_px"    , &C_mu1_px);
   wwtree->Branch("C_mu1_py"    , &C_mu1_py);
   wwtree->Branch("C_mu1_pz"    , &C_mu1_pz);
-  wwtree->Branch("C_mu1_PAT_pt"    , &C_mu1_PAT_pt);
   wwtree->Branch("C_mu1_eta"   , &C_mu1_eta);
+  wwtree->Branch("C_mu1_phi"   , &C_mu1_phi);
   wwtree->Branch("C_mu1_BS_ips_xy", &C_mu1_BS_ips_xy);
   wwtree->Branch("C_mu1_BS_ips", &C_mu1_BS_ips);
   wwtree->Branch("C_mu1_PV_ips_z" , &C_mu1_PV_ips_z);
@@ -1208,27 +1265,36 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("C_mu1_isSoft", &C_mu1_isSoft);
   wwtree->Branch("C_mu1_isLoose", &C_mu1_isLoose);
   wwtree->Branch("C_mu1_isMedium", &C_mu1_isMedium);
+  wwtree->Branch("C_mu1_isGlobal", &C_mu1_isGlobal);
+  wwtree->Branch("C_mu1_isTracker", &C_mu1_isTracker);
+  wwtree->Branch("C_mu1_isStandAlone", &C_mu1_isStandAlone);
   wwtree->Branch("C_mu1_isMCMatched", &C_mu1_isMCMatched);
 
-  wwtree->Branch("C_mu2_px"    , &C_mu2_px);
-  wwtree->Branch("C_mu2_py"    , &C_mu2_py);
-  wwtree->Branch("C_mu2_pz"    , &C_mu2_pz);
-  wwtree->Branch("C_mu2_PAT_pt"    , &C_mu2_PAT_pt);
-  wwtree->Branch("C_mu2_eta"   , &C_mu2_eta);
-  wwtree->Branch("C_mu2_BS_ips_xy", &C_mu2_BS_ips_xy);
-  wwtree->Branch("C_mu2_BS_ips", &C_mu2_BS_ips);
-  wwtree->Branch("C_mu2_PV_ips_z" , &C_mu2_PV_ips_z);
-  wwtree->Branch("C_mu2_BS_ip_xy" , &C_mu2_BS_ip_xy);
-  wwtree->Branch("C_mu2_BS_ip" , &C_mu2_BS_ip);
-  wwtree->Branch("C_mu2_PV_ip_z"  , &C_mu2_PV_ip_z);
-  wwtree->Branch("C_mu2_charge", &C_mu2_charge);
-  wwtree->Branch("C_mu2_isSoft", &C_mu2_isSoft);
-  wwtree->Branch("C_mu2_isLoose", &C_mu2_isLoose);
-  wwtree->Branch("C_mu2_isMedium", &C_mu2_isMedium);
-  wwtree->Branch("C_mu2_isMCMatched", &C_mu2_isMCMatched);
+  wwtree->Branch("C_trigMu_px"    , &C_trigMu_px);
+  wwtree->Branch("C_trigMu_py"    , &C_trigMu_py);
+  wwtree->Branch("C_trigMu_pz"    , &C_trigMu_pz);
+  wwtree->Branch("C_trigMu_eta"   , &C_trigMu_eta);
+  wwtree->Branch("C_trigMu_phi"   , &C_trigMu_phi);
+  wwtree->Branch("C_trigMu_BS_ips_xy", &C_trigMu_BS_ips_xy);
+  wwtree->Branch("C_trigMu_BS_ips", &C_trigMu_BS_ips);
+  wwtree->Branch("C_trigMu_PV_ips_z" , &C_trigMu_PV_ips_z);
+  wwtree->Branch("C_trigMu_BS_ip_xy" , &C_trigMu_BS_ip_xy);
+  wwtree->Branch("C_trigMu_BS_ip" , &C_trigMu_BS_ip);
+  wwtree->Branch("C_trigMu_PV_ip_z"  , &C_trigMu_PV_ip_z);
+  wwtree->Branch("C_trigMu_charge", &C_trigMu_charge);
+  wwtree->Branch("C_trigMu_isSoft", &C_trigMu_isSoft);
+  wwtree->Branch("C_trigMu_isLoose", &C_trigMu_isLoose);
+  wwtree->Branch("C_trigMu_isMedium", &C_trigMu_isMedium);
+  wwtree->Branch("C_trigMu_isGlobal", &C_trigMu_isGlobal);
+  wwtree->Branch("C_trigMu_isTracker", &C_trigMu_isTracker);
+  wwtree->Branch("C_trigMu_isStandAlone", &C_trigMu_isStandAlone);
+  wwtree->Branch("C_trigMu_isMCMatched", &C_trigMu_isMCMatched);
 
   wwtree->Branch("C_mass"            , &C_mass          );
   wwtree->Branch("C_mu1mu2_mass"     , &C_mu1mu2_mass   );
+  wwtree->Branch("C_mu1mu2_dr"       , &C_mu1mu2_dr   );
+  wwtree->Branch("C_mu1pi_dr"        , &C_mu1pi_dr   );
+  wwtree->Branch("C_mu2pi_dr"        , &C_mu2pi_dr   );
   wwtree->Branch("C_pi_charge"       , &C_pi_charge     );
   wwtree->Branch("C_px"              , &C_px            );
   wwtree->Branch("C_py"              , &C_py            );
@@ -1237,6 +1303,7 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("C_pi_py"           , &C_pi_py         );
   wwtree->Branch("C_pi_pz"           , &C_pi_pz         );
   wwtree->Branch("C_pi_eta"          , &C_pi_eta        );
+  wwtree->Branch("C_pi_phi"          , &C_pi_phi        );
   wwtree->Branch("C_pi_BS_ips_xy"       , &C_pi_BS_ips_xy     );
   wwtree->Branch("C_pi_BS_ips_z"        , &C_pi_BS_ips_z     );
   wwtree->Branch("C_pi_BS_ip_xy"        , &C_pi_BS_ip_xy     );
@@ -1309,7 +1376,7 @@ void hnlAnalyzer_miniAOD::beginJob()
 
   wwtree->Branch("C_pi_isHnlDaughter"        , &C_pi_isHnlDaughter        );
   wwtree->Branch("C_mu1_isHnlDaughter"        , &C_mu1_isHnlDaughter        );
-  wwtree->Branch("C_mu2_isHnlBrother"        , &C_mu2_isHnlBrother        );
+  wwtree->Branch("C_trigMu_isHnlBrother"        , &C_trigMu_isHnlBrother        );
 
 }
 
