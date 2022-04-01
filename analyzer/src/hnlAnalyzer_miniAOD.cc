@@ -539,7 +539,6 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 
   //trigger muon
-  //for ( std::vector<pat::Muon>::const_iterator iTrigMuon = thePATMuonHandle->begin(); iTrigMuon != thePATMuonHandle->end(); ++iTrigMuon){
   for ( unsigned i=0; i<thePATMuonHandle->size(); ++i){
 
     const pat::Muon* iTrigMuon = &(*thePATMuonHandle).at(i);
@@ -638,13 +637,9 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 
 
-    //for ( std::vector<pat::Muon>::const_iterator iMuon1 = thePATMuonHandle->begin(); iMuon1 != thePATMuonHandle->end(); ++iMuon1){
     for ( unsigned j=0; j<thePATMuonHandle->size(); ++j){
       if (i==j) continue;
-    //for ( unsigned j=i+1; j<thePATMuonHandle->size(); ++j){
 
-
-      //if (IsTheSame(*iMuon1,*iTrigMuon) ) continue;
       const pat::Muon* iMuon1 = &(*thePATMuonHandle).at(j);
 
       //cuts on muon pt and eta
@@ -677,8 +672,8 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
       for (std::vector<pat::PackedCandidate>::const_iterator iTrack1 = thePATTrackHandle->begin(); iTrack1 != thePATTrackHandle->end(); ++iTrack1){
 
-	//if (IsTheSame(*iTrack1,*iTrigMuon) ) continue;
-        //if (IsTheSame(*iTrack1,*iMuon1) ) continue;
+	if (IsTheSame(*iTrack1,*iTrigMuon) ) continue;
+        if (IsTheSame(*iTrack1,*iMuon1) ) continue;
 
 	//Nota bene: if you want to use dxy or dz you need to be sure 
 	//the pt of the tracks is bigger than 0.5 GeV, otherwise you 
