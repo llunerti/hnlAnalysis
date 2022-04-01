@@ -128,6 +128,7 @@ class DsToPhiPi_PhiToMuMu_miniAOD : public edm::one::EDAnalyzer<edm::one::Shared
     std::vector<short> *mu2_Phi_isSoft;
     std::vector<short> *mu2_Phi_isLoose;
     std::vector<short> *mu2_Phi_isMedium;
+    std::vector<unsigned> *mu2_Phi_idx;
 
     std::vector<float> *mu1_Phi_px, *mu1_Phi_py, *mu1_Phi_pz;
     std::vector<float> *mu1_Phi_pt;
@@ -140,6 +141,7 @@ class DsToPhiPi_PhiToMuMu_miniAOD : public edm::one::EDAnalyzer<edm::one::Shared
     std::vector<short> *mu1_Phi_isSoft;
     std::vector<short> *mu1_Phi_isLoose;
     std::vector<short> *mu1_Phi_isMedium;
+    std::vector<unsigned> *mu1_Phi_idx;
 
     std::vector<float> *mu_B_px, *mu_B_py, *mu_B_pz;
     std::vector<float> *mu_B_pt;
@@ -152,6 +154,9 @@ class DsToPhiPi_PhiToMuMu_miniAOD : public edm::one::EDAnalyzer<edm::one::Shared
     std::vector<short> *mu_B_isSoft;
     std::vector<short> *mu_B_isLoose;
     std::vector<short> *mu_B_isMedium;
+    std::vector<unsigned> *mu_B_idx;
+
+    std::vector<unsigned> *mu_trig_idx;
 
     std::vector<int>   *pi_charge;
     std::vector<float> *pi_px, *pi_py, *pi_pz;
@@ -319,6 +324,7 @@ DsToPhiPi_PhiToMuMu_miniAOD::DsToPhiPi_PhiToMuMu_miniAOD(const edm::ParameterSet
   mu2_Phi_isSoft(0),
   mu2_Phi_isLoose(0),
   mu2_Phi_isMedium(0),
+  mu2_Phi_idx(0),
 
   mu1_Phi_px(0),
   mu1_Phi_py(0),
@@ -335,6 +341,7 @@ DsToPhiPi_PhiToMuMu_miniAOD::DsToPhiPi_PhiToMuMu_miniAOD(const edm::ParameterSet
   mu1_Phi_isSoft(0),
   mu1_Phi_isLoose(0),
   mu1_Phi_isMedium(0),
+  mu1_Phi_idx(0),
 
   mu_B_px(0),
   mu_B_py(0),
@@ -351,6 +358,9 @@ DsToPhiPi_PhiToMuMu_miniAOD::DsToPhiPi_PhiToMuMu_miniAOD(const edm::ParameterSet
   mu_B_isSoft(0),
   mu_B_isLoose(0),
   mu_B_isMedium(0),
+  mu_B_idx(0),
+
+  mu_trig_idx(0),
 
   pi_charge(0),
   pi_px(0),
@@ -534,6 +544,9 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
   std::vector<float> TriggerPathEta(nTrigPaths);
   std::vector<float> TriggerPathDR(nTrigPaths);
 
+  // Do I really need information about firing trigger?
+  //
+  /*
   if (triggerResults_handle.isValid())
   {
     const edm::TriggerNames & TheTriggerNames = iEvent.triggerNames(*triggerResults_handle);
@@ -555,43 +568,33 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
 	}
       }
     }
+
+    mu7_ip4_fired->push_back(TriggersFired[0]);
+    mu8_ip3_fired->push_back(TriggersFired[1]);
+    mu8_ip3p5_fired ->push_back(TriggersFired[2]);
+    mu8_ip5_fired->push_back(TriggersFired[3]);
+    mu8_ip6_fired->push_back(TriggersFired[4]);
+    mu9_ip4_fired->push_back(TriggersFired[5]);
+    mu9_ip5_fired->push_back(TriggersFired[6]);
+    mu9_ip6_fired->push_back(TriggersFired[7]);
+    mu10p5_ip3p5_fired->push_back(TriggersFired[8]);
+    mu12_ip6_fired->push_back(TriggersFired[9]);
   }
   else
   {
     std::cout << " No trigger Results in event :( " << run << "," << event << std::endl;
   }
+  */
 
-  nCand= 0;
-  KinematicParticleFactoryFromTransientTrack pFactory;
+  for ( unsigned i_trigmu=0; i_trigmu<thePATMuonHandle->size(); ++i_trigmu){
 
-  for ( unsigned i_mub=0; i_mub<thePATMuonHandle->size(); ++i_mub){
-    const pat::Muon* iMuonB = &(*thePATMuonHandle).at(i_mub);
+    const pat::Muon* iTrigMu = &(*thePATMuonHandle).at(i_trigmu);
 
     //cut on muon pt and eta
-    if(iMuonB->pt() < trigMu_pt_cut_) continue;
-    if(std::abs(iMuonB->eta()) > trigMu_eta_cut_)  continue;
+    if(iTrigMu->pt() < trigMu_pt_cut_) continue;
+    if(std::abs(iTrigMu->eta()) > trigMu_eta_cut_)  continue;
 
-    //save muon id info
-    bool isSoftMuonB = false;
-    bool isLooseMuonB = false;
-    bool isMediumMuonB = false;
-
-    if (iMuonB->isSoftMuon(thePrimaryV)) isSoftMuonB=true;
-    if (iMuonB->isLooseMuon())           isLooseMuonB=true;
-    if (iMuonB->isMediumMuon())          isMediumMuonB=true;
-
-    if(!isSoftMuonB) continue;
-
-    //cuts on muon track
-    TrackRef inTrackMuB;
-    inTrackMuB = iMuonB->track();
-    if( inTrackMuB.isNull())  continue;
-    if(!(inTrackMuB->quality(reco::TrackBase::highPurity)))  continue;
-
-    TransientTrack mu_BTT((*TTrackBuilder).build(inTrackMuB));
-
-    TLorentzVector p4mub;
-    p4mub.SetPtEtaPhiM(iMuonB->pt(), iMuonB->eta(), iMuonB->phi(), pdg.PDG_MUON_MASS);
+    if (!iTrigMu->isSoftMuon(thePrimaryV)) continue;
 
     for (unsigned i = 0; i < nTrigPaths; ++i) {
 
@@ -601,16 +604,16 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
       float best_matching_path_eta = -9999.;
       float min_dr = 9999.;
 
-      if(iMuonB->triggerObjectMatches().size()!=0){
+      if(iTrigMu->triggerObjectMatches().size()!=0){
 
 	//loop over trigger object matched to muon
-	for(size_t j=0; j<iMuonB->triggerObjectMatches().size();j++){
+	for(size_t j=0; j<iTrigMu->triggerObjectMatches().size();j++){
 
-	  if(iMuonB->triggerObjectMatch(j)!=0 && iMuonB->triggerObjectMatch(j)->hasPathName(TriggerPaths[i],true,true)){
+	  if(iTrigMu->triggerObjectMatch(j)!=0 && iTrigMu->triggerObjectMatch(j)->hasPathName(TriggerPaths[i],true,true)){
 
-	    float trig_dr  = reco::deltaR(iMuonB->triggerObjectMatch(j)->p4(), iMuonB->p4()); 
-	    float trig_pt  = iMuonB->triggerObjectMatch(j)->pt();                   
-	    float trig_eta = iMuonB->triggerObjectMatch(j)->eta();                   
+	    float trig_dr  = reco::deltaR(iTrigMu->triggerObjectMatch(j)->p4(), iTrigMu->p4()); 
+	    float trig_pt  = iTrigMu->triggerObjectMatch(j)->pt();                   
+	    float trig_eta = iTrigMu->triggerObjectMatch(j)->eta();                   
 
 	    //select the match with smallest dR
 	    if (trig_dr<min_dr){
@@ -630,6 +633,84 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
       TriggerPathEta[i] = best_matching_path_eta;
 
     }
+
+    mu_trig_idx ->push_back(i_trigmu);
+
+    mu7_ip4_matched->push_back(TriggerMatches[0]);
+    mu8_ip3_matched->push_back(TriggerMatches[1]);
+    mu8_ip3p5_matched ->push_back(TriggerMatches[2]);
+    mu8_ip5_matched->push_back(TriggerMatches[3]);
+    mu8_ip6_matched->push_back(TriggerMatches[4]);
+    mu9_ip4_matched->push_back(TriggerMatches[5]);
+    mu9_ip5_matched->push_back(TriggerMatches[6]);
+    mu9_ip6_matched->push_back(TriggerMatches[7]);
+    mu10p5_ip3p5_matched->push_back(TriggerMatches[8]);
+    mu12_ip6_matched->push_back(TriggerMatches[9]);
+
+    mu7_ip4_eta->push_back(TriggerPathEta[0]);
+    mu8_ip3_eta->push_back(TriggerPathEta[1]);
+    mu8_ip3p5_eta ->push_back(TriggerPathEta[2]);
+    mu8_ip5_eta->push_back(TriggerPathEta[3]);
+    mu8_ip6_eta->push_back(TriggerPathEta[4]);
+    mu9_ip4_eta->push_back(TriggerPathEta[5]);
+    mu9_ip5_eta->push_back(TriggerPathEta[6]);
+    mu9_ip6_eta->push_back(TriggerPathEta[7]);
+    mu10p5_ip3p5_eta->push_back(TriggerPathEta[8]);
+    mu12_ip6_eta->push_back(TriggerPathEta[9]);
+
+    mu7_ip4_pt->push_back(TriggerPathPt[0]);
+    mu8_ip3_pt->push_back(TriggerPathPt[1]);
+    mu8_ip3p5_pt ->push_back(TriggerPathPt[2]);
+    mu8_ip5_pt->push_back(TriggerPathPt[3]);
+    mu8_ip6_pt->push_back(TriggerPathPt[4]);
+    mu9_ip4_pt->push_back(TriggerPathPt[5]);
+    mu9_ip5_pt->push_back(TriggerPathPt[6]);
+    mu9_ip6_pt->push_back(TriggerPathPt[7]);
+    mu10p5_ip3p5_pt->push_back(TriggerPathPt[8]);
+    mu12_ip6_pt->push_back(TriggerPathPt[9]);
+
+    mu7_ip4_dr->push_back(TriggerPathDR[0]);
+    mu8_ip3_dr->push_back(TriggerPathDR[1]);
+    mu8_ip3p5_dr ->push_back(TriggerPathDR[2]);
+    mu8_ip5_dr->push_back(TriggerPathDR[3]);
+    mu8_ip6_dr->push_back(TriggerPathDR[4]);
+    mu9_ip4_dr->push_back(TriggerPathDR[5]);
+    mu9_ip5_dr->push_back(TriggerPathDR[6]);
+    mu9_ip6_dr->push_back(TriggerPathDR[7]);
+    mu10p5_ip3p5_dr->push_back(TriggerPathDR[8]);
+    mu12_ip6_dr->push_back(TriggerPathDR[9]);
+  }
+
+  nCand= 0;
+  KinematicParticleFactoryFromTransientTrack pFactory;
+
+  for ( unsigned i_mub=0; i_mub<thePATMuonHandle->size(); ++i_mub){
+    const pat::Muon* iMuonB = &(*thePATMuonHandle).at(i_mub);
+
+    //cut on muon pt and eta
+    if(iMuonB->pt() < mu_pt_cut_) continue;
+    if(std::abs(iMuonB->eta()) > mu_eta_cut_)  continue;
+
+    //save muon id info
+    bool isSoftMuonB = false;
+    bool isLooseMuonB = false;
+    bool isMediumMuonB = false;
+
+    if (iMuonB->isSoftMuon(thePrimaryV)) isSoftMuonB=true;
+    if (iMuonB->isLooseMuon())           isLooseMuonB=true;
+    if (iMuonB->isMediumMuon())          isMediumMuonB=true;
+
+    //cuts on muon track
+    TrackRef inTrackMuB;
+    inTrackMuB = iMuonB->track();
+    if( inTrackMuB.isNull())  continue;
+    if(!(inTrackMuB->quality(reco::TrackBase::highPurity)))  continue;
+
+    TransientTrack mu_BTT((*TTrackBuilder).build(inTrackMuB));
+
+    TLorentzVector p4mub;
+    p4mub.SetPtEtaPhiM(iMuonB->pt(), iMuonB->eta(), iMuonB->phi(), pdg.PDG_MUON_MASS);
+
 
     for ( unsigned i_muphi1=0; i_muphi1<thePATMuonHandle->size(); ++i_muphi1){
       if (i_muphi1==i_mub) continue;
@@ -731,7 +812,7 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
 	  //cuts on mupi mass and pt
 	  //TLorentzVector p4muphi2,p4pi1;
 	  TLorentzVector p4pi1;
-          TLorentzVector p4muphi2;
+	  TLorentzVector p4muphi2;
 	  p4pi1.SetPtEtaPhiM(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(), pdg.PDG_PION_MASS);
 	  p4muphi2.SetPtEtaPhiM(iMuonPhi2->pt(), iMuonPhi2->eta(), iMuonPhi2->phi(), pdg.PDG_MUON_MASS);
 
@@ -774,7 +855,7 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
 	  bs_particles.push_back(pFactory.particle(mu_BTT, pdg.PM_PDG_MUON_MASS, chi,ndf, muon_sigma));
 	  bs_particles.push_back(ds_particle);
 
-          // fit Ds mu vertex
+	  // fit Ds mu vertex
 	  RefCountedKinematicTree bsToDsMu_kinTree;
 	  KinematicConstrainedVertexFitter BsToDsMu_vertexFitter;
 	  bsToDsMu_kinTree = BsToDsMu_vertexFitter.fit(bs_particles);
@@ -789,7 +870,7 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
 	  double bs_vtxprob   = TMath::Prob(bs_vtx->chiSquared(), (int) bs_vtx->degreesOfFreedom());
 	  if(bs_vtxprob < vtx_prob_cut_) continue;
 
-          // good candidate found
+	  // good candidate found
 	  ++nCand;
 
 	  Double_t vertex_x    = thePrimaryV.x();
@@ -801,7 +882,7 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
 	  Double_t vertex_prob = (TMath::Prob(thePrimaryV.chi2(), (int) thePrimaryV.ndof()));
 
 
-          // get Ds vertex info
+	  // get Ds vertex info
 	  Double_t ds_vx    = ds_vtx->position().x();
 	  Double_t ds_vy    = ds_vtx->position().y();
 	  Double_t ds_vz    = ds_vtx->position().z();
@@ -809,7 +890,7 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
 	  Double_t ds_vyErr = ds_vtx->error().cyy();
 	  Double_t ds_vzErr = ds_vtx->error().czz();
 
-          // get Bs vertex info
+	  // get Bs vertex info
 	  Double_t bs_vx    = bs_vtx->position().x();
 	  Double_t bs_vy    = bs_vtx->position().y();
 	  Double_t bs_vz    = bs_vtx->position().z();
@@ -817,19 +898,19 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
 	  Double_t bs_vyErr = bs_vtx->error().cyy();
 	  Double_t bs_vzErr = bs_vtx->error().czz();
 
-          //get Ds pt
-          Double_t px_ds = ds_particle->currentState().globalMomentum().x();
-          Double_t py_ds = ds_particle->currentState().globalMomentum().y();
-          Double_t pz_ds = ds_particle->currentState().globalMomentum().z();
-          Double_t p_ds = ds_particle->currentState().globalMomentum().mag();
-          Double_t pt_ds = TMath::Sqrt(px_ds*px_ds + py_ds*py_ds);
+	  //get Ds pt
+	  Double_t px_ds = ds_particle->currentState().globalMomentum().x();
+	  Double_t py_ds = ds_particle->currentState().globalMomentum().y();
+	  Double_t pz_ds = ds_particle->currentState().globalMomentum().z();
+	  Double_t p_ds = ds_particle->currentState().globalMomentum().mag();
+	  Double_t pt_ds = TMath::Sqrt(px_ds*px_ds + py_ds*py_ds);
 
-          //get Bs pt
-          Double_t px_bs = bs_particle->currentState().globalMomentum().x();
-          Double_t py_bs = bs_particle->currentState().globalMomentum().y();
-          Double_t pz_bs = bs_particle->currentState().globalMomentum().z();
-          Double_t p_bs = bs_particle->currentState().globalMomentum().mag();
-          Double_t pt_bs = TMath::Sqrt(px_bs*px_bs + py_bs*py_bs);
+	  //get Bs pt
+	  Double_t px_bs = bs_particle->currentState().globalMomentum().x();
+	  Double_t py_bs = bs_particle->currentState().globalMomentum().y();
+	  Double_t pz_bs = bs_particle->currentState().globalMomentum().z();
+	  Double_t p_bs = bs_particle->currentState().globalMomentum().mag();
+	  Double_t pt_bs = TMath::Sqrt(px_bs*px_bs + py_bs*py_bs);
 
 	  //compute cos2D and cos3D wrt beam spot
 	  Double_t dx_ds = ds_vtx->position().x() - (*theBeamSpot).position().x();
@@ -900,6 +981,7 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
 	  mu2_Phi_isSoft   ->push_back(isSoftMuonPhi2? 1: 0);
 	  mu2_Phi_isLoose  ->push_back(isLooseMuonPhi2? 1: 0);
 	  mu2_Phi_isMedium ->push_back(isMediumMuonPhi2? 1: 0);
+	  mu2_Phi_idx ->push_back(i_muphi2);
 
 	  mu1_Phi_px ->push_back(iMuonPhi1->px());
 	  mu1_Phi_py ->push_back(iMuonPhi1->py());
@@ -916,6 +998,7 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
 	  mu1_Phi_isSoft   ->push_back(isSoftMuonPhi1? 1: 0);
 	  mu1_Phi_isLoose  ->push_back(isLooseMuonPhi1? 1: 0);
 	  mu1_Phi_isMedium ->push_back(isMediumMuonPhi1? 1: 0);
+	  mu1_Phi_idx ->push_back(i_muphi1);
 
 	  mu_B_px ->push_back(iMuonB->px());
 	  mu_B_py ->push_back(iMuonB->py());
@@ -932,6 +1015,7 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
 	  mu_B_isSoft   ->push_back(isSoftMuonB? 1: 0);
 	  mu_B_isLoose  ->push_back(isLooseMuonB? 1: 0);
 	  mu_B_isMedium ->push_back(isMediumMuonB? 1: 0);
+	  mu_B_idx ->push_back(i_mub);
 
 	  pi_charge ->push_back(iTrack1->charge());
 	  pi_px ->push_back(p4pi1.Px());
@@ -952,61 +1036,6 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
 	  PV_zErr ->push_back(vertex_zErr);
 	  PV_prob ->push_back(vertex_prob);
 	  //PV_dN ->push_back(vertex_dN);
-
-	  mu7_ip4_matched->push_back(TriggerMatches[0]);
-	  mu8_ip3_matched->push_back(TriggerMatches[1]);
-	  mu8_ip3p5_matched ->push_back(TriggerMatches[2]);
-	  mu8_ip5_matched->push_back(TriggerMatches[3]);
-	  mu8_ip6_matched->push_back(TriggerMatches[4]);
-	  mu9_ip4_matched->push_back(TriggerMatches[5]);
-	  mu9_ip5_matched->push_back(TriggerMatches[6]);
-	  mu9_ip6_matched->push_back(TriggerMatches[7]);
-	  mu10p5_ip3p5_matched->push_back(TriggerMatches[8]);
-	  mu12_ip6_matched->push_back(TriggerMatches[9]);
-
-	  mu7_ip4_eta->push_back(TriggerPathEta[0]);
-	  mu8_ip3_eta->push_back(TriggerPathEta[1]);
-	  mu8_ip3p5_eta ->push_back(TriggerPathEta[2]);
-	  mu8_ip5_eta->push_back(TriggerPathEta[3]);
-	  mu8_ip6_eta->push_back(TriggerPathEta[4]);
-	  mu9_ip4_eta->push_back(TriggerPathEta[5]);
-	  mu9_ip5_eta->push_back(TriggerPathEta[6]);
-	  mu9_ip6_eta->push_back(TriggerPathEta[7]);
-	  mu10p5_ip3p5_eta->push_back(TriggerPathEta[8]);
-	  mu12_ip6_eta->push_back(TriggerPathEta[9]);
-
-	  mu7_ip4_pt->push_back(TriggerPathPt[0]);
-	  mu8_ip3_pt->push_back(TriggerPathPt[1]);
-	  mu8_ip3p5_pt ->push_back(TriggerPathPt[2]);
-	  mu8_ip5_pt->push_back(TriggerPathPt[3]);
-	  mu8_ip6_pt->push_back(TriggerPathPt[4]);
-	  mu9_ip4_pt->push_back(TriggerPathPt[5]);
-	  mu9_ip5_pt->push_back(TriggerPathPt[6]);
-	  mu9_ip6_pt->push_back(TriggerPathPt[7]);
-	  mu10p5_ip3p5_pt->push_back(TriggerPathPt[8]);
-	  mu12_ip6_pt->push_back(TriggerPathPt[9]);
-
-	  mu7_ip4_dr->push_back(TriggerPathDR[0]);
-	  mu8_ip3_dr->push_back(TriggerPathDR[1]);
-	  mu8_ip3p5_dr ->push_back(TriggerPathDR[2]);
-	  mu8_ip5_dr->push_back(TriggerPathDR[3]);
-	  mu8_ip6_dr->push_back(TriggerPathDR[4]);
-	  mu9_ip4_dr->push_back(TriggerPathDR[5]);
-	  mu9_ip5_dr->push_back(TriggerPathDR[6]);
-	  mu9_ip6_dr->push_back(TriggerPathDR[7]);
-	  mu10p5_ip3p5_dr->push_back(TriggerPathDR[8]);
-	  mu12_ip6_dr->push_back(TriggerPathDR[9]);
-
-	  mu7_ip4_fired->push_back(TriggerMatches[0]);
-	  mu8_ip3_fired->push_back(TriggerMatches[1]);
-	  mu8_ip3p5_fired ->push_back(TriggerMatches[2]);
-	  mu8_ip5_fired->push_back(TriggerMatches[3]);
-	  mu8_ip6_fired->push_back(TriggerMatches[4]);
-	  mu9_ip4_fired->push_back(TriggerMatches[5]);
-	  mu9_ip5_fired->push_back(TriggerMatches[6]);
-	  mu9_ip6_fired->push_back(TriggerMatches[7]);
-	  mu10p5_ip3p5_fired->push_back(TriggerMatches[8]);
-	  mu12_ip6_fired->push_back(TriggerMatches[9]);
 
 	}
       }
@@ -1082,6 +1111,7 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
   mu2_Phi_isSoft->clear();
   mu2_Phi_isLoose->clear();
   mu2_Phi_isMedium->clear();
+  mu2_Phi_idx->clear();
 
   mu1_Phi_px->clear();
   mu1_Phi_py->clear();
@@ -1098,6 +1128,7 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
   mu1_Phi_isSoft->clear();
   mu1_Phi_isLoose->clear();
   mu1_Phi_isMedium->clear();
+  mu1_Phi_idx->clear();
 
   mu_B_px->clear();
   mu_B_py->clear();
@@ -1114,7 +1145,10 @@ DsToPhiPi_PhiToMuMu_miniAOD::analyze(const edm::Event& iEvent, const edm::EventS
   mu_B_isSoft->clear();
   mu_B_isLoose->clear();
   mu_B_isMedium->clear();
-  
+  mu_B_idx->clear();
+
+  mu_trig_idx->clear();
+
   pi_charge->clear();
   pi_px->clear(); 
   pi_py->clear();
@@ -1303,6 +1337,7 @@ void DsToPhiPi_PhiToMuMu_miniAOD::beginJob()
   wwtree->Branch("mu2_Phi_isSoft", &mu2_Phi_isSoft);
   wwtree->Branch("mu2_Phi_isLoose", &mu2_Phi_isLoose);
   wwtree->Branch("mu2_Phi_isMedium", &mu2_Phi_isMedium);
+  wwtree->Branch("mu2_Phi_idx", &mu2_Phi_idx);
 
   wwtree->Branch("mu1_Phi_px"    , &mu1_Phi_px);
   wwtree->Branch("mu1_Phi_py"    , &mu1_Phi_py);
@@ -1319,6 +1354,7 @@ void DsToPhiPi_PhiToMuMu_miniAOD::beginJob()
   wwtree->Branch("mu1_Phi_isSoft", &mu1_Phi_isSoft);
   wwtree->Branch("mu1_Phi_isLoose", &mu1_Phi_isLoose);
   wwtree->Branch("mu1_Phi_isMedium", &mu1_Phi_isMedium);
+  wwtree->Branch("mu1_Phi_idx", &mu1_Phi_idx);
 
   wwtree->Branch("mu_B_px"    , &mu_B_px);
   wwtree->Branch("mu_B_py"    , &mu_B_py);
@@ -1335,6 +1371,9 @@ void DsToPhiPi_PhiToMuMu_miniAOD::beginJob()
   wwtree->Branch("mu_B_isSoft", &mu_B_isSoft);
   wwtree->Branch("mu_B_isLoose", &mu_B_isLoose);
   wwtree->Branch("mu_B_isMedium", &mu_B_isMedium);
+  wwtree->Branch("mu_B_idx", &mu_B_idx);
+
+  wwtree->Branch("mu_trig_idx", &mu_trig_idx);
 
   wwtree->Branch("pi_charge"       , &pi_charge     );
   wwtree->Branch("pi_px"           , &pi_px         );
