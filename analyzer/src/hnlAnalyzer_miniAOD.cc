@@ -77,8 +77,8 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
 
     double mu_pt_cut_;
     double mu_eta_cut_;
-    double trigMu_pt_cut_;
-    double trigMu_eta_cut_;
+    double trig_mu_pt_cut_;
+    double trig_mu_eta_cut_;
     double pi_pt_cut_;
     double pi_eta_cut_;
     double mumupi_mass_cut_;
@@ -86,6 +86,9 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     double mupi_mass_low_cut_;
     double mupi_pt_cut_;
     double vtx_prob_cut_;
+    int isSignal;
+
+    std::vector<std::string> TriggerPaths;
 
     Int_t N_written_events;
 
@@ -93,52 +96,62 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     std::vector<float> *C_Hnl_mass;
     std::vector<float> *C_Hnl_preFit_mass;
     std::vector<float> *C_Hnl_px, *C_Hnl_py, *C_Hnl_pz;
+    std::vector<float> *C_Hnl_pt;
     std::vector<float> *C_Hnl_vertex_x, *C_Hnl_vertex_y, *C_Hnl_vertex_z;
     std::vector<float> *C_Hnl_vertex_xErr, *C_Hnl_vertex_yErr, *C_Hnl_vertex_zErr;
     std::vector<float> *C_Hnl_vertex_sig;
     std::vector<float> *C_Hnl_vertex_cos3D;
     std::vector<float> *C_Hnl_vertex_cos2D;
 
-    std::vector<float> *C_mu1_px, *C_mu1_py, *C_mu1_pz;
-    std::vector<float> *C_mu1_eta;
-    std::vector<float> *C_mu1_phi;
-    std::vector<float> *C_mu1_BS_ips_xy, *C_mu1_PV_ips_z;
-    std::vector<float> *C_mu1_BS_ips;
-    std::vector<float> *C_mu1_BS_ip_xy, *C_mu1_PV_ip_z;
-    std::vector<float> *C_mu1_BS_ip;
-    std::vector<int>   *C_mu1_charge;
-    std::vector<short> *C_mu1_isSoft;
-    std::vector<short> *C_mu1_isLoose;
-    std::vector<short> *C_mu1_isMedium;
-    std::vector<short> *C_mu1_isGlobal;
-    std::vector<short> *C_mu1_isTracker;
-    std::vector<short> *C_mu1_isStandAlone;
-    std::vector<short> *C_mu1_isMCMatched;
+    std::vector<float> *C_mu_Hnl_px, *C_mu_Hnl_py, *C_mu_Hnl_pz;
+    std::vector<float> *C_mu_Hnl_pt;
+    std::vector<float> *C_mu_Hnl_eta;
+    std::vector<float> *C_mu_Hnl_phi;
+    std::vector<float> *C_mu_Hnl_BS_ips_xy, *C_mu_Hnl_PV_ips_z;
+    std::vector<float> *C_mu_Hnl_BS_ips;
+    std::vector<float> *C_mu_Hnl_BS_ip_xy, *C_mu_Hnl_PV_ip_z;
+    std::vector<float> *C_mu_Hnl_BS_ip;
+    std::vector<int>   *C_mu_Hnl_charge;
+    std::vector<short> *C_mu_Hnl_isSoft;
+    std::vector<short> *C_mu_Hnl_isLoose;
+    std::vector<short> *C_mu_Hnl_isMedium;
+    std::vector<short> *C_mu_Hnl_isGlobal;
+    std::vector<short> *C_mu_Hnl_isTracker;
+    std::vector<short> *C_mu_Hnl_isStandAlone;
+    std::vector<short> *C_mu_Hnl_isMCMatched;
+    std::vector<unsigned> *C_mu_Hnl_idx;
+    std::vector<int>   *C_mu_Hnl_idMatch;
 
-    std::vector<float> *C_trigMu_px, *C_trigMu_py, *C_trigMu_pz;
-    std::vector<float> *C_trigMu_eta;
-    std::vector<float> *C_trigMu_phi;
-    std::vector<float> *C_trigMu_BS_ips_xy, *C_trigMu_PV_ips_z;
-    std::vector<float> *C_trigMu_BS_ips;
-    std::vector<float> *C_trigMu_BS_ip_xy, *C_trigMu_PV_ip_z;
-    std::vector<float> *C_trigMu_BS_ip;
-    std::vector<int>   *C_trigMu_charge;
-    std::vector<short> *C_trigMu_isSoft;
-    std::vector<short> *C_trigMu_isLoose;
-    std::vector<short> *C_trigMu_isMedium;
-    std::vector<short> *C_trigMu_isGlobal;
-    std::vector<short> *C_trigMu_isTracker;
-    std::vector<short> *C_trigMu_isStandAlone;
-    std::vector<short> *C_trigMu_isMCMatched;
+    std::vector<float> *C_mu_B_px, *C_mu_B_py, *C_mu_B_pz;
+    std::vector<float> *C_mu_B_pt;
+    std::vector<float> *C_mu_B_eta;
+    std::vector<float> *C_mu_B_phi;
+    std::vector<float> *C_mu_B_BS_ips_xy, *C_mu_B_PV_ips_z;
+    std::vector<float> *C_mu_B_BS_ips;
+    std::vector<float> *C_mu_B_BS_ip_xy, *C_mu_B_PV_ip_z;
+    std::vector<float> *C_mu_B_BS_ip;
+    std::vector<int>   *C_mu_B_charge;
+    std::vector<short> *C_mu_B_isSoft;
+    std::vector<short> *C_mu_B_isLoose;
+    std::vector<short> *C_mu_B_isMedium;
+    std::vector<short> *C_mu_B_isGlobal;
+    std::vector<short> *C_mu_B_isTracker;
+    std::vector<short> *C_mu_B_isStandAlone;
+    std::vector<short> *C_mu_B_isMCMatched;
+    std::vector<unsigned> *C_mu_B_idx;
 
-    std::vector<float> *C_mass;
+    std::vector<float> *C_B_mass;
+    std::vector<float> *C_B_px, *C_B_py, *C_B_pz;
+    std::vector<float> *C_B_pt;
+
     std::vector<float> *C_mu1mu2_mass;
     std::vector<float> *C_mu1mu2_dr;
     std::vector<float> *C_mu1pi_dr;
     std::vector<float> *C_mu2pi_dr;
+
     std::vector<int>   *C_pi_charge;
-    std::vector<float> *C_px, *C_py, *C_pz;
     std::vector<float> *C_pi_px, *C_pi_py, *C_pi_pz;
+    std::vector<float> *C_pi_pt;
     std::vector<float> *C_pi_eta;
     std::vector<float> *C_pi_phi;
     std::vector<float> *C_pi_BS_ips_xy, *C_pi_BS_ips_z;
@@ -150,65 +163,69 @@ class hnlAnalyzer_miniAOD : public edm::one::EDAnalyzer<edm::one::SharedResource
     std::vector<float> *PV_prob;
     //std::vector<int>   *PV_dN;
 
-    std::vector<short>  *mu7_ip4_matched;
-    std::vector<short>  *mu8_ip3_matched;
-    std::vector<short>  *mu8_ip3p5_matched ;
-    std::vector<short>  *mu8_ip5_matched;
-    std::vector<short>  *mu8_ip6_matched;
-    std::vector<short>  *mu9_ip4_matched;
-    std::vector<short>  *mu9_ip5_matched;
-    std::vector<short>  *mu9_ip6_matched;
-    std::vector<short>  *mu10p5_ip3p5_matched;
-    std::vector<short>  *mu12_ip6_matched;
+    std::vector<unsigned>  *HLT_mu_trig_idx;
+    std::vector<float>  *HLT_mu_trig_pt;
+    std::vector<float>  *HLT_mu_trig_eta;
 
-    std::vector<float>  *mu7_ip4_eta;
-    std::vector<float>  *mu8_ip3_eta;
-    std::vector<float>  *mu8_ip3p5_eta;
-    std::vector<float>  *mu8_ip5_eta;
-    std::vector<float>  *mu8_ip6_eta;
-    std::vector<float>  *mu9_ip4_eta;
-    std::vector<float>  *mu9_ip5_eta;
-    std::vector<float>  *mu9_ip6_eta;
-    std::vector<float>  *mu10p5_ip3p5_eta;
-    std::vector<float>  *mu12_ip6_eta;
+    std::vector<short>  *HLT_mu7_ip4_matched;
+    std::vector<short>  *HLT_mu8_ip3_matched;
+    std::vector<short>  *HLT_mu8_ip3p5_matched ;
+    std::vector<short>  *HLT_mu8_ip5_matched;
+    std::vector<short>  *HLT_mu8_ip6_matched;
+    std::vector<short>  *HLT_mu9_ip4_matched;
+    std::vector<short>  *HLT_mu9_ip5_matched;
+    std::vector<short>  *HLT_mu9_ip6_matched;
+    std::vector<short>  *HLT_mu10p5_ip3p5_matched;
+    std::vector<short>  *HLT_mu12_ip6_matched;
 
-    std::vector<float>  *mu7_ip4_pt;
-    std::vector<float>  *mu8_ip3_pt;
-    std::vector<float>  *mu8_ip3p5_pt ;
-    std::vector<float>  *mu8_ip5_pt;
-    std::vector<float>  *mu8_ip6_pt;
-    std::vector<float>  *mu9_ip4_pt;
-    std::vector<float>  *mu9_ip5_pt;
-    std::vector<float>  *mu9_ip6_pt;
-    std::vector<float>  *mu10p5_ip3p5_pt;
-    std::vector<float>  *mu12_ip6_pt;
+    std::vector<float>  *HLT_mu7_ip4_eta;
+    std::vector<float>  *HLT_mu8_ip3_eta;
+    std::vector<float>  *HLT_mu8_ip3p5_eta;
+    std::vector<float>  *HLT_mu8_ip5_eta;
+    std::vector<float>  *HLT_mu8_ip6_eta;
+    std::vector<float>  *HLT_mu9_ip4_eta;
+    std::vector<float>  *HLT_mu9_ip5_eta;
+    std::vector<float>  *HLT_mu9_ip6_eta;
+    std::vector<float>  *HLT_mu10p5_ip3p5_eta;
+    std::vector<float>  *HLT_mu12_ip6_eta;
 
-    std::vector<float>  *mu7_ip4_dr;
-    std::vector<float>  *mu8_ip3_dr;
-    std::vector<float>  *mu8_ip3p5_dr ;
-    std::vector<float>  *mu8_ip5_dr;
-    std::vector<float>  *mu8_ip6_dr;
-    std::vector<float>  *mu9_ip4_dr;
-    std::vector<float>  *mu9_ip5_dr;
-    std::vector<float>  *mu9_ip6_dr;
-    std::vector<float>  *mu10p5_ip3p5_dr;
-    std::vector<float>  *mu12_ip6_dr;
+    std::vector<float>  *HLT_mu7_ip4_pt;
+    std::vector<float>  *HLT_mu8_ip3_pt;
+    std::vector<float>  *HLT_mu8_ip3p5_pt ;
+    std::vector<float>  *HLT_mu8_ip5_pt;
+    std::vector<float>  *HLT_mu8_ip6_pt;
+    std::vector<float>  *HLT_mu9_ip4_pt;
+    std::vector<float>  *HLT_mu9_ip5_pt;
+    std::vector<float>  *HLT_mu9_ip6_pt;
+    std::vector<float>  *HLT_mu10p5_ip3p5_pt;
+    std::vector<float>  *HLT_mu12_ip6_pt;
 
-    std::vector<short>  *mu7_ip4_fired;
-    std::vector<short>  *mu8_ip3_fired;
-    std::vector<short>  *mu8_ip3p5_fired;
-    std::vector<short>  *mu8_ip5_fired;
-    std::vector<short>  *mu8_ip6_fired;
-    std::vector<short>  *mu9_ip4_fired;
-    std::vector<short>  *mu9_ip5_fired;
-    std::vector<short>  *mu9_ip6_fired;
-    std::vector<short>  *mu10p5_ip3p5_fired;
-    std::vector<short>  *mu12_ip6_fired;
+    std::vector<float>  *HLT_mu7_ip4_dr;
+    std::vector<float>  *HLT_mu8_ip3_dr;
+    std::vector<float>  *HLT_mu8_ip3p5_dr ;
+    std::vector<float>  *HLT_mu8_ip5_dr;
+    std::vector<float>  *HLT_mu8_ip6_dr;
+    std::vector<float>  *HLT_mu9_ip4_dr;
+    std::vector<float>  *HLT_mu9_ip5_dr;
+    std::vector<float>  *HLT_mu9_ip6_dr;
+    std::vector<float>  *HLT_mu10p5_ip3p5_dr;
+    std::vector<float>  *HLT_mu12_ip6_dr;
+
+    std::vector<short>  *HLT_mu7_ip4_fired;
+    std::vector<short>  *HLT_mu8_ip3_fired;
+    std::vector<short>  *HLT_mu8_ip3p5_fired;
+    std::vector<short>  *HLT_mu8_ip5_fired;
+    std::vector<short>  *HLT_mu8_ip6_fired;
+    std::vector<short>  *HLT_mu9_ip4_fired;
+    std::vector<short>  *HLT_mu9_ip5_fired;
+    std::vector<short>  *HLT_mu9_ip6_fired;
+    std::vector<short>  *HLT_mu10p5_ip3p5_fired;
+    std::vector<short>  *HLT_mu12_ip6_fired;
 
 
     std::vector<short>  *C_pi_isHnlDaughter;
-    std::vector<short>  *C_mu1_isHnlDaughter;
-    std::vector<short>  *C_trigMu_isHnlBrother;
+    std::vector<short>  *C_mu_Hnl_isHnlDaughter;
+    std::vector<short>  *C_mu_B_isHnlBrother;
 
     Int_t nCand;
 
@@ -241,8 +258,8 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   PUInfoToken_       (consumes<std::vector<PileupSummaryInfo>> (iConfig.getParameter<edm::InputTag>("PUInfoTag"))),
   mu_pt_cut_         (iConfig.getUntrackedParameter<double>("mu_pt_cut" )),
   mu_eta_cut_        (iConfig.getUntrackedParameter<double>("mu_eta_cut")),
-  trigMu_pt_cut_     (iConfig.getUntrackedParameter<double>("trigMu_pt_cut" )),
-  trigMu_eta_cut_    (iConfig.getUntrackedParameter<double>("trigMu_eta_cut")),
+  trig_mu_pt_cut_    (iConfig.getUntrackedParameter<double>("trigMu_pt_cut" )),
+  trig_mu_eta_cut_   (iConfig.getUntrackedParameter<double>("trigMu_eta_cut")),
   pi_pt_cut_         (iConfig.getUntrackedParameter<double>("pi_pt_cut" )),
   pi_eta_cut_        (iConfig.getUntrackedParameter<double>("pi_eta_cut")),
   mumupi_mass_cut_   (iConfig.getUntrackedParameter<double>("b_mass_cut")),
@@ -250,6 +267,8 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   mupi_mass_low_cut_ (iConfig.getUntrackedParameter<double>("mupi_mass_low_cut")),
   mupi_pt_cut_       (iConfig.getUntrackedParameter<double>("mupi_pt_cut")),
   vtx_prob_cut_      (iConfig.getUntrackedParameter<double>("vtx_prob_cut")),
+  isSignal           (iConfig.getUntrackedParameter<int>("is_signal")),
+  TriggerPaths       (iConfig.getUntrackedParameter<std::vector<std::string>>("TriggerPaths")),
 
   C_Hnl_vertex_prob(0),
   C_Hnl_mass(0),
@@ -257,6 +276,7 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   C_Hnl_px(0),
   C_Hnl_py(0),  
   C_Hnl_pz(0),
+  C_Hnl_pt(0),
   C_Hnl_vertex_x(0),  
   C_Hnl_vertex_y(0), 
   C_Hnl_vertex_z(0),
@@ -267,58 +287,66 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   C_Hnl_vertex_cos3D(0),
   C_Hnl_vertex_cos2D(0),
 
-  C_mu1_px(0),
-  C_mu1_py(0),       
-  C_mu1_pz(0),
-  C_mu1_eta(0),
-  C_mu1_phi(0),
-  C_mu1_BS_ips_xy(0),
-  C_mu1_PV_ips_z(0),
-  C_mu1_BS_ips(0),
-  C_mu1_BS_ip_xy(0),
-  C_mu1_PV_ip_z(0),
-  C_mu1_BS_ip(0),
-  C_mu1_charge(0),
-  C_mu1_isSoft(0),
-  C_mu1_isLoose(0),
-  C_mu1_isMedium(0),
-  C_mu1_isGlobal(0),
-  C_mu1_isTracker(0),
-  C_mu1_isStandAlone(0),
-  C_mu1_isMCMatched(0),
+  C_mu_Hnl_px(0),
+  C_mu_Hnl_py(0),       
+  C_mu_Hnl_pz(0),
+  C_mu_Hnl_pt(0),
+  C_mu_Hnl_eta(0),
+  C_mu_Hnl_phi(0),
+  C_mu_Hnl_BS_ips_xy(0),
+  C_mu_Hnl_PV_ips_z(0),
+  C_mu_Hnl_BS_ips(0),
+  C_mu_Hnl_BS_ip_xy(0),
+  C_mu_Hnl_PV_ip_z(0),
+  C_mu_Hnl_BS_ip(0),
+  C_mu_Hnl_charge(0),
+  C_mu_Hnl_isSoft(0),
+  C_mu_Hnl_isLoose(0),
+  C_mu_Hnl_isMedium(0),
+  C_mu_Hnl_isGlobal(0),
+  C_mu_Hnl_isTracker(0),
+  C_mu_Hnl_isStandAlone(0),
+  C_mu_Hnl_isMCMatched(0),
+  C_mu_Hnl_idx(0),
 
-  C_trigMu_px(0),
-  C_trigMu_py(0),
-  C_trigMu_pz(0),
-  C_trigMu_eta(0),
-  C_trigMu_phi(0),
-  C_trigMu_BS_ips_xy(0),
-  C_trigMu_PV_ips_z(0),
-  C_trigMu_BS_ips(0),
-  C_trigMu_BS_ip_xy(0),
-  C_trigMu_PV_ip_z(0),
-  C_trigMu_BS_ip(0),
-  C_trigMu_charge(0),
-  C_trigMu_isSoft(0),
-  C_trigMu_isLoose(0),
-  C_trigMu_isMedium(0),
-  C_trigMu_isGlobal(0),
-  C_trigMu_isTracker(0),
-  C_trigMu_isStandAlone(0),
-  C_trigMu_isMCMatched(0),
+  C_mu_B_px(0),
+  C_mu_B_py(0),
+  C_mu_B_pz(0),
+  C_mu_B_pt(0),
+  C_mu_B_eta(0),
+  C_mu_B_phi(0),
+  C_mu_B_BS_ips_xy(0),
+  C_mu_B_PV_ips_z(0),
+  C_mu_B_BS_ips(0),
+  C_mu_B_BS_ip_xy(0),
+  C_mu_B_PV_ip_z(0),
+  C_mu_B_BS_ip(0),
+  C_mu_B_charge(0),
+  C_mu_B_isSoft(0),
+  C_mu_B_isLoose(0),
+  C_mu_B_isMedium(0),
+  C_mu_B_isGlobal(0),
+  C_mu_B_isTracker(0),
+  C_mu_B_isStandAlone(0),
+  C_mu_B_isMCMatched(0),
+  C_mu_B_idx(0),
 
-  C_mass(0),
+  C_B_mass(0),
+  C_B_px(0),
+  C_B_py(0),
+  C_B_pz(0),
+  C_B_pt(0),
+
   C_mu1mu2_mass(0),
   C_mu1mu2_dr(0),
   C_mu1pi_dr(0),
   C_mu2pi_dr(0),
+
   C_pi_charge(0),
-  C_px(0),
-  C_py(0),
-  C_pz(0),
   C_pi_px(0),
   C_pi_py(0),
   C_pi_pz(0),
+  C_pi_pt(0),
   C_pi_eta(0),
   C_pi_phi(0),
   C_pi_BS_ips_xy(0),
@@ -331,64 +359,68 @@ hnlAnalyzer_miniAOD::hnlAnalyzer_miniAOD(const edm::ParameterSet& iConfig) :
   PV_xErr(0)  , PV_yErr(0), PV_zErr(0),
   PV_prob(0)  , //PV_dN(0),
 
-  mu7_ip4_matched(0),
-  mu8_ip3_matched(0),
-  mu8_ip3p5_matched (0),
-  mu8_ip5_matched(0),
-  mu8_ip6_matched(0),
-  mu9_ip4_matched(0),
-  mu9_ip5_matched(0),
-  mu9_ip6_matched(0),
-  mu10p5_ip3p5_matched(0),
-  mu12_ip6_matched(0),
+  HLT_mu_trig_idx(0),
+  HLT_mu_trig_pt(0),
+  HLT_mu_trig_eta(0),
 
-  mu7_ip4_eta(0),
-  mu8_ip3_eta(0),
-  mu8_ip3p5_eta (0),
-  mu8_ip5_eta(0),
-  mu8_ip6_eta(0),
-  mu9_ip4_eta(0),
-  mu9_ip5_eta(0),
-  mu9_ip6_eta(0),
-  mu10p5_ip3p5_eta(0),
-  mu12_ip6_eta(0),
+  HLT_mu7_ip4_matched(0),
+  HLT_mu8_ip3_matched(0),
+  HLT_mu8_ip3p5_matched (0),
+  HLT_mu8_ip5_matched(0),
+  HLT_mu8_ip6_matched(0),
+  HLT_mu9_ip4_matched(0),
+  HLT_mu9_ip5_matched(0),
+  HLT_mu9_ip6_matched(0),
+  HLT_mu10p5_ip3p5_matched(0),
+  HLT_mu12_ip6_matched(0),
 
-  mu7_ip4_pt(0),
-  mu8_ip3_pt(0),
-  mu8_ip3p5_pt (0),
-  mu8_ip5_pt(0),
-  mu8_ip6_pt(0),
-  mu9_ip4_pt(0),
-  mu9_ip5_pt(0),
-  mu9_ip6_pt(0),
-  mu10p5_ip3p5_pt(0),
-  mu12_ip6_pt(0),
+  HLT_mu7_ip4_eta(0),
+  HLT_mu8_ip3_eta(0),
+  HLT_mu8_ip3p5_eta (0),
+  HLT_mu8_ip5_eta(0),
+  HLT_mu8_ip6_eta(0),
+  HLT_mu9_ip4_eta(0),
+  HLT_mu9_ip5_eta(0),
+  HLT_mu9_ip6_eta(0),
+  HLT_mu10p5_ip3p5_eta(0),
+  HLT_mu12_ip6_eta(0),
 
-  mu7_ip4_dr(0),
-  mu8_ip3_dr(0),
-  mu8_ip3p5_dr (0),
-  mu8_ip5_dr(0),
-  mu8_ip6_dr(0),
-  mu9_ip4_dr(0),
-  mu9_ip5_dr(0),
-  mu9_ip6_dr(0),
-  mu10p5_ip3p5_dr(0),
-  mu12_ip6_dr(0),
+  HLT_mu7_ip4_pt(0),
+  HLT_mu8_ip3_pt(0),
+  HLT_mu8_ip3p5_pt (0),
+  HLT_mu8_ip5_pt(0),
+  HLT_mu8_ip6_pt(0),
+  HLT_mu9_ip4_pt(0),
+  HLT_mu9_ip5_pt(0),
+  HLT_mu9_ip6_pt(0),
+  HLT_mu10p5_ip3p5_pt(0),
+  HLT_mu12_ip6_pt(0),
 
-  mu7_ip4_fired(0),
-  mu8_ip3_fired(0),
-  mu8_ip3p5_fired (0),
-  mu8_ip5_fired(0),
-  mu8_ip6_fired(0),
-  mu9_ip4_fired(0),
-  mu9_ip5_fired(0),
-  mu9_ip6_fired(0),
-  mu10p5_ip3p5_fired(0),
-  mu12_ip6_fired(0),
+  HLT_mu7_ip4_dr(0),
+  HLT_mu8_ip3_dr(0),
+  HLT_mu8_ip3p5_dr (0),
+  HLT_mu8_ip5_dr(0),
+  HLT_mu8_ip6_dr(0),
+  HLT_mu9_ip4_dr(0),
+  HLT_mu9_ip5_dr(0),
+  HLT_mu9_ip6_dr(0),
+  HLT_mu10p5_ip3p5_dr(0),
+  HLT_mu12_ip6_dr(0),
+
+  HLT_mu7_ip4_fired(0),
+  HLT_mu8_ip3_fired(0),
+  HLT_mu8_ip3p5_fired (0),
+  HLT_mu8_ip5_fired(0),
+  HLT_mu8_ip6_fired(0),
+  HLT_mu9_ip4_fired(0),
+  HLT_mu9_ip5_fired(0),
+  HLT_mu9_ip6_fired(0),
+  HLT_mu10p5_ip3p5_fired(0),
+  HLT_mu12_ip6_fired(0),
 
   C_pi_isHnlDaughter(0),
-  C_mu1_isHnlDaughter(0),
-  C_trigMu_isHnlBrother(0),
+  C_mu_Hnl_isHnlDaughter(0),
+  C_mu_B_isHnlBrother(0),
 
   nCand(0),
 
@@ -485,18 +517,25 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   else
     nPU_trueInt = -1;
 
-  std::vector<std::string> TriggerPaths = {
-    "HLT_Mu7_IP4_part*" ,     // 0
-    "HLT_Mu8_IP3_part*" ,     // 1
-    "HLT_Mu8_IP3p5_part*" ,   // 2  
-    "HLT_Mu8_IP5_part*" ,     // 3
-    "HLT_Mu8_IP6_part*" ,     // 4  
-    "HLT_Mu9_IP4_part*" ,     // 5
-    "HLT_Mu9_IP5_part*" ,     // 6  
-    "HLT_Mu9_IP6_part*" ,     // 7  
-    "HLT_Mu10p5_IP3p5_part*", // 8
-    "HLT_Mu12_IP6_part*"      // 9
-  };
+  //Save PV info
+  for(unsigned i=0; i<(*recVtxs).size(); ++i){
+    const reco::Vertex* pv = &(*recVtxs).at(i);
+    Double_t vertex_x    = pv->x();
+    Double_t vertex_y    = pv->y();
+    Double_t vertex_z    = pv->z();
+    Double_t vertex_xErr = pv->covariance(0, 0);
+    Double_t vertex_yErr = pv->covariance(1, 1);
+    Double_t vertex_zErr = pv->covariance(2, 2);
+    Double_t vertex_prob = (TMath::Prob(pv->chi2(), (int) pv->ndof()));
+
+    PV_x ->push_back(vertex_x);
+    PV_y ->push_back(vertex_y);
+    PV_z ->push_back(vertex_z);
+    PV_xErr ->push_back(vertex_xErr);
+    PV_yErr ->push_back(vertex_yErr);
+    PV_zErr ->push_back(vertex_zErr);
+    PV_prob ->push_back(vertex_prob);
+  }
 
   unsigned int nTrigPaths = (unsigned int)TriggerPaths.size();
 
@@ -506,96 +545,58 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   std::vector<float> TriggerPathEta(nTrigPaths);
   std::vector<float> TriggerPathDR(nTrigPaths);
 
-  if (triggerResults_handle.isValid())
-  {
-    const edm::TriggerNames & TheTriggerNames = iEvent.triggerNames(*triggerResults_handle);
-    std::vector<int> part_bpark = {0,1,2,3,4,5};
+  //Do I need info about firing trigger since I have trigger matching?
+  /*
+     if (triggerResults_handle.isValid())
+     {
+     const edm::TriggerNames & TheTriggerNames = iEvent.triggerNames(*triggerResults_handle);
+     std::vector<int> part_bpark = {0,1,2,3,4,5};
 
-    for(unsigned i=0; i<nTrigPaths; ++i){
-      for (int part : part_bpark){
-	std::string trigger_path = TriggerPaths.at(i).substr(0,TriggerPaths.at(i).find("*"));
-	std::string trigger_path_addPart; 
-	trigger_path_addPart = trigger_path + std::to_string(part);
+     for(unsigned i=0; i<nTrigPaths; ++i){
+     for (int part : part_bpark){
+     std::string trigger_path = TriggerPaths.at(i).substr(0,TriggerPaths.at(i).find("*"));
+     std::string trigger_path_addPart; 
+     trigger_path_addPart = trigger_path + std::to_string(part);
 
-	for (int version = 1; version < 30; version++){
-	  std::string full_trigger_path; 
-	  full_trigger_path = trigger_path_addPart + "_v" + std::to_string(version);
-	  unsigned int bit = TheTriggerNames.triggerIndex(edm::InputTag(full_trigger_path).label());
+     for (int version = 1; version < 30; version++){
+     std::string full_trigger_path; 
+     full_trigger_path = trigger_path_addPart + "_v" + std::to_string(version);
+     unsigned int bit = TheTriggerNames.triggerIndex(edm::InputTag(full_trigger_path).label());
 
-	  if ((bit < triggerResults_handle->size()) && (triggerResults_handle->accept(bit)) && (!triggerResults_handle->error(bit)))
-	    TriggersFired[i] = 1;
-	}
-      }
-    }
-  }
-  else
-  {
-    std::cout << " No trigger Results in event :( " << run << "," << event << std::endl;
-  }
+     if ((bit < triggerResults_handle->size()) && (triggerResults_handle->accept(bit)) && (!triggerResults_handle->error(bit)))
+     TriggersFired[i] = 1;
+     }
+     }
+     }
 
-  nCand= 0;
-
-  KinematicParticleFactoryFromTransientTrack pFactory;
-
+     HLT_mu7_ip4_fired->push_back(TriggersFired[0]);
+     HLT_mu8_ip3_fired->push_back(TriggersFired[1]);
+     HLT_mu8_ip3p5_fired ->push_back(TriggersFired[2]);
+     HLT_mu8_ip5_fired->push_back(TriggersFired[3]);
+     HLT_mu8_ip6_fired->push_back(TriggersFired[4]);
+     HLT_mu9_ip4_fired->push_back(TriggersFired[5]);
+     HLT_mu9_ip5_fired->push_back(TriggersFired[6]);
+     HLT_mu9_ip6_fired->push_back(TriggersFired[7]);
+     HLT_mu10p5_ip3p5_fired->push_back(TriggersFired[8]);
+     HLT_mu12_ip6_fired->push_back(TriggersFired[9]);
+     }
+     else
+     {
+     std::cout << " No trigger Results in event :( " << run << "," << event << std::endl;
+     }
+     */
 
   //trigger muon
-  for ( unsigned i=0; i<thePATMuonHandle->size(); ++i){
+  for ( unsigned i_trigmu=0; i_trigmu<thePATMuonHandle->size(); ++i_trigmu){
 
-    const pat::Muon* iTrigMuon = &(*thePATMuonHandle).at(i);
+    const pat::Muon* iTrigMuon = &(*thePATMuonHandle).at(i_trigmu);
 
     //cut on muon pt and eta
-    if(iTrigMuon->pt() < trigMu_pt_cut_) continue;
-    if(std::abs(iTrigMuon->eta()) > trigMu_eta_cut_)  continue;
+    if(iTrigMuon->pt() < trig_mu_pt_cut_) continue;
+    if(std::abs(iTrigMuon->eta()) > trig_mu_eta_cut_)  continue;
 
-    //save muon id info
-    bool isSoftTrigMuon = false;
-    bool isLooseTrigMuon = false;
-    bool isMediumTrigMuon = false;
-
-    if (iTrigMuon->isSoftMuon(thePrimaryV)) isSoftTrigMuon=true;
-    if (iTrigMuon->isLooseMuon())           isLooseTrigMuon=true;
-    if (iTrigMuon->isMediumMuon())          isMediumTrigMuon=true;
-
-    //save muon track info
-    bool isGlobalTrigMuon = false;
-    bool isTrackerTrigMuon = false;
-    bool isStandAloneTrigMuon = false;
-
-    if (iTrigMuon->isGlobalMuon())     isGlobalTrigMuon = true;
-    if (iTrigMuon->isTrackerMuon())    isTrackerTrigMuon = true;
-    if (iTrigMuon->isStandAloneMuon()) isStandAloneTrigMuon = true;
-
-
-    TrackRef inTrackMu2;
-    inTrackMu2 = iTrigMuon->track();
-    if (inTrackMu2.isNull())  continue;
-    if (!(inTrackMu2->quality(reco::TrackBase::highPurity)))  continue;
-
-    TLorentzVector p4mu2;
-    p4mu2.SetPtEtaPhiM(iTrigMuon->pt(), iTrigMuon->eta(), iTrigMuon->phi(), pdg.PDG_MUON_MASS);
-
-    bool is_hnl_brother = false;
-    bool isMCMatchedTrigMuon = false;
-
-    //mc matching for signal particles
-    if(run==1){
-      int match_trigMu_idx = getMatchedGenPartIdx(iTrigMuon->pt(),iTrigMuon->eta(),iTrigMuon->phi(),13,*packedGenParticleCollection);
-
-      if (match_trigMu_idx>0){
-	isMCMatchedTrigMuon = true;
-	pat::PackedGenParticle matchedGenMuon = (*packedGenParticleCollection).at(match_trigMu_idx);
-	if (matchedGenMuon.motherRef().isNonnull() &&
-	    matchedGenMuon.motherRef().isAvailable()){
-	  const reco::Candidate* genMuonMom = matchedGenMuon.mother(0);
-	  for (unsigned i=0; i<genMuonMom->numberOfDaughters(); ++i){
-	    if(std::abs(genMuonMom->daughter(i)->pdgId()) == 9900015){
-	      is_hnl_brother = true;
-	      break;
-	    }
-	  }
-	}
-      }
-    }
+    //cut on muon id
+    if (!iTrigMuon->isSoftMuon(thePrimaryV)) continue;
 
     for (unsigned i = 0; i < nTrigPaths; ++i) {
 
@@ -635,45 +636,158 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
     }
 
+    HLT_mu_trig_idx ->push_back(i_trigmu);
+    HLT_mu_trig_pt ->push_back(iTrigMuon->pt());
+    HLT_mu_trig_eta ->push_back(iTrigMuon->eta());
+
+    HLT_mu7_ip4_matched->push_back(TriggerMatches[0]);
+    HLT_mu8_ip3_matched->push_back(TriggerMatches[1]);
+    HLT_mu8_ip3p5_matched ->push_back(TriggerMatches[2]);
+    HLT_mu8_ip5_matched->push_back(TriggerMatches[3]);
+    HLT_mu8_ip6_matched->push_back(TriggerMatches[4]);
+    HLT_mu9_ip4_matched->push_back(TriggerMatches[5]);
+    HLT_mu9_ip5_matched->push_back(TriggerMatches[6]);
+    HLT_mu9_ip6_matched->push_back(TriggerMatches[7]);
+    HLT_mu10p5_ip3p5_matched->push_back(TriggerMatches[8]);
+    HLT_mu12_ip6_matched->push_back(TriggerMatches[9]);
+
+    HLT_mu7_ip4_eta->push_back(TriggerPathEta[0]);
+    HLT_mu8_ip3_eta->push_back(TriggerPathEta[1]);
+    HLT_mu8_ip3p5_eta ->push_back(TriggerPathEta[2]);
+    HLT_mu8_ip5_eta->push_back(TriggerPathEta[3]);
+    HLT_mu8_ip6_eta->push_back(TriggerPathEta[4]);
+    HLT_mu9_ip4_eta->push_back(TriggerPathEta[5]);
+    HLT_mu9_ip5_eta->push_back(TriggerPathEta[6]);
+    HLT_mu9_ip6_eta->push_back(TriggerPathEta[7]);
+    HLT_mu10p5_ip3p5_eta->push_back(TriggerPathEta[8]);
+    HLT_mu12_ip6_eta->push_back(TriggerPathEta[9]);
+
+    HLT_mu7_ip4_pt->push_back(TriggerPathPt[0]);
+    HLT_mu8_ip3_pt->push_back(TriggerPathPt[1]);
+    HLT_mu8_ip3p5_pt ->push_back(TriggerPathPt[2]);
+    HLT_mu8_ip5_pt->push_back(TriggerPathPt[3]);
+    HLT_mu8_ip6_pt->push_back(TriggerPathPt[4]);
+    HLT_mu9_ip4_pt->push_back(TriggerPathPt[5]);
+    HLT_mu9_ip5_pt->push_back(TriggerPathPt[6]);
+    HLT_mu9_ip6_pt->push_back(TriggerPathPt[7]);
+    HLT_mu10p5_ip3p5_pt->push_back(TriggerPathPt[8]);
+    HLT_mu12_ip6_pt->push_back(TriggerPathPt[9]);
+
+    HLT_mu7_ip4_dr->push_back(TriggerPathDR[0]);
+    HLT_mu8_ip3_dr->push_back(TriggerPathDR[1]);
+    HLT_mu8_ip3p5_dr ->push_back(TriggerPathDR[2]);
+    HLT_mu8_ip5_dr->push_back(TriggerPathDR[3]);
+    HLT_mu8_ip6_dr->push_back(TriggerPathDR[4]);
+    HLT_mu9_ip4_dr->push_back(TriggerPathDR[5]);
+    HLT_mu9_ip5_dr->push_back(TriggerPathDR[6]);
+    HLT_mu9_ip6_dr->push_back(TriggerPathDR[7]);
+    HLT_mu10p5_ip3p5_dr->push_back(TriggerPathDR[8]);
+    HLT_mu12_ip6_dr->push_back(TriggerPathDR[9]);
+  }
+
+  nCand= 0;
+  KinematicParticleFactoryFromTransientTrack pFactory;
 
 
-    for ( unsigned j=0; j<thePATMuonHandle->size(); ++j){
-      if (i==j) continue;
+  for ( unsigned i_mub=0; i_mub<thePATMuonHandle->size(); ++i_mub){
 
-      const pat::Muon* iMuon1 = &(*thePATMuonHandle).at(j);
+    const pat::Muon* iMuonBs = &(*thePATMuonHandle).at(i_mub);
+
+    //cuts on muon pt and eta
+    if (iMuonBs->pt() < mu_pt_cut_) continue;
+    if (std::abs(iMuonBs->eta()) > mu_eta_cut_)  continue;
+
+    //save muon id info
+    bool isSoftMuonBs = false;
+    bool isLooseMuonBs = false;
+    bool isMediumMuonBs = false;
+
+    if (iMuonBs->isSoftMuon(thePrimaryV)) isSoftMuonBs=true;
+    if (iMuonBs->isLooseMuon())           isLooseMuonBs=true;
+    if (iMuonBs->isMediumMuon())          isMediumMuonBs=true;
+
+    if (!isSoftMuonBs && !isLooseMuonBs && !isMediumMuonBs) continue;
+
+    //save muon track info
+    bool isGlobalMuonBs = false;
+    bool isTrackerMuonBs = false;
+    bool isStandAloneMuonBs = false;
+
+    if (iMuonBs->isGlobalMuon())     isGlobalMuonBs = true;
+    if (iMuonBs->isTrackerMuon())    isTrackerMuonBs = true;
+    if (iMuonBs->isStandAloneMuon()) isStandAloneMuonBs = true;
+
+    //cuts on muon track
+    TrackRef inTrackMuBs;
+    inTrackMuBs = iMuonBs->track();
+    if( inTrackMuBs.isNull())  continue;
+    if(!(inTrackMuBs->quality(reco::TrackBase::highPurity)))  continue;
+
+    TLorentzVector p4mubs;
+    p4mubs.SetPtEtaPhiM(iMuonBs->pt(), iMuonBs->eta(), iMuonBs->phi(), pdg.PDG_MUON_MASS);
+
+    bool is_hnl_brother = false;
+    bool isMCMatchedBsMuon = false;
+
+    //mc matching for signal particles
+    if(run==1 && isSignal){
+      int match_bsMu_idx = getMatchedGenPartIdx(iMuonBs->pt(),iMuonBs->eta(),iMuonBs->phi(),13,*packedGenParticleCollection);
+      if (match_bsMu_idx>0){
+	isMCMatchedBsMuon = true;
+	pat::PackedGenParticle matchedGenMuon = (*packedGenParticleCollection).at(match_bsMu_idx);
+	if (matchedGenMuon.motherRef().isNonnull() &&
+	    matchedGenMuon.motherRef().isAvailable()){
+	  const reco::Candidate* genMuonMom = matchedGenMuon.mother(0);
+	  for (unsigned i=0; i<genMuonMom->numberOfDaughters(); ++i){
+	    if(std::abs(genMuonMom->daughter(i)->pdgId()) == 9900015){
+	      is_hnl_brother = true;
+	      break;
+	    }
+	  }
+	}
+      }
+    }
+
+    for ( unsigned i_muhnl=0; i_muhnl<thePATMuonHandle->size(); ++i_muhnl){
+      if (i_mub==i_muhnl) continue;
+
+      const pat::Muon* iMuonHnl = &(*thePATMuonHandle).at(i_muhnl);
 
       //cuts on muon pt and eta
-      if (iMuon1->pt() < mu_pt_cut_) continue;
-      if (std::abs(iMuon1->eta()) > mu_eta_cut_)  continue;
+      if (iMuonHnl->pt() < mu_pt_cut_) continue;
+      if (std::abs(iMuonHnl->eta()) > mu_eta_cut_)  continue;
 
       //save muon id info
-      bool isSoftMuon1 = false;
-      bool isLooseMuon1 = false;
-      bool isMediumMuon1 = false;
+      bool isSoftMuonHnl = false;
+      bool isLooseMuonHnl = false;
+      bool isMediumMuonHnl = false;
 
-      if (iMuon1->isSoftMuon(thePrimaryV)) isSoftMuon1=true;
-      if (iMuon1->isLooseMuon())           isLooseMuon1=true;
-      if (iMuon1->isMediumMuon())          isMediumMuon1=true;
+      if (iMuonHnl->isSoftMuon(thePrimaryV)) isSoftMuonHnl=true;
+      if (iMuonHnl->isLooseMuon())           isLooseMuonHnl=true;
+      if (iMuonHnl->isMediumMuon())          isMediumMuonHnl=true;
+
+      if (!isSoftMuonHnl && !isLooseMuonHnl && !isMediumMuonHnl) continue;
 
       //save muon track info
-      bool isGlobalMuon1 = false;
-      bool isTrackerMuon1 = false;
-      bool isStandAloneMuon1 = false;
+      bool isGlobalMuonHnl = false;
+      bool isTrackerMuonHnl = false;
+      bool isStandAloneMuonHnl = false;
 
-      if (iMuon1->isGlobalMuon())     isGlobalMuon1 = true;
-      if (iMuon1->isTrackerMuon())    isTrackerMuon1 = true;
-      if (iMuon1->isStandAloneMuon()) isStandAloneMuon1 = true;
+      if (iMuonHnl->isGlobalMuon())     isGlobalMuonHnl = true;
+      if (iMuonHnl->isTrackerMuon())    isTrackerMuonHnl = true;
+      if (iMuonHnl->isStandAloneMuon()) isStandAloneMuonHnl = true;
 
       //cuts on muon track
-      TrackRef inTrackMu1;
-      inTrackMu1 = iMuon1->track();
-      if( inTrackMu1.isNull())  continue;
-      if(!(inTrackMu1->quality(reco::TrackBase::highPurity)))  continue;
+      TrackRef inTrackMuHnl;
+      inTrackMuHnl = iMuonHnl->track();
+      if( inTrackMuHnl.isNull())  continue;
+      if(!(inTrackMuHnl->quality(reco::TrackBase::highPurity)))  continue;
+
 
       for (std::vector<pat::PackedCandidate>::const_iterator iTrack1 = thePATTrackHandle->begin(); iTrack1 != thePATTrackHandle->end(); ++iTrack1){
 
-	if (IsTheSame(*iTrack1,*iTrigMuon) ) continue;
-        if (IsTheSame(*iTrack1,*iMuon1) ) continue;
+	if (IsTheSame(*iTrack1,*iMuonBs) ) continue;
+	if (IsTheSame(*iTrack1,*iMuonHnl) ) continue;
 
 	//Nota bene: if you want to use dxy or dz you need to be sure 
 	//the pt of the tracks is bigger than 0.5 GeV, otherwise you 
@@ -687,41 +801,41 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	if(!(iTrack1->trackHighPurity())) continue; 
 
 
-	bool hnl_pi_match = false;
+	bool hnl_C_pi_match = false;
 	bool isMCMatchedTrack1 = false;
 
-	if(run==1){
-	  int match_pi_idx = getMatchedGenPartIdx(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(),211,*packedGenParticleCollection);
+	if(run==1 && isSignal>0){
+	  int match_C_pi_idx = getMatchedGenPartIdx(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(),211,*packedGenParticleCollection);
 
-	  if (match_pi_idx>0){
+	  if (match_C_pi_idx>0){
 	    isMCMatchedTrack1 = true;
-	    pat::PackedGenParticle matchedGenPi = (*packedGenParticleCollection).at(match_pi_idx);
+	    pat::PackedGenParticle matchedGenPi = (*packedGenParticleCollection).at(match_C_pi_idx);
 	    if (matchedGenPi.motherRef().isNonnull() &&
 		matchedGenPi.motherRef().isAvailable() &&
 		std::abs(matchedGenPi.mother(0)->pdgId()) == 9900015 ){
-	      hnl_pi_match=true;
+	      hnl_C_pi_match=true;
 	    }
 	  }
 	}
 
 	//cuts on mupi mass and pt
-	TLorentzVector p4mu1,p4pi1;
-	p4pi1.SetPtEtaPhiM(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(), pdg.PDG_PION_MASS);
-	p4mu1.SetPtEtaPhiM(iMuon1->pt(), iMuon1->eta(), iMuon1->phi(), pdg.PDG_MUON_MASS);
+	TLorentzVector p4muhnl,p4pi;
+	p4pi.SetPtEtaPhiM(iTrack1->pt(),iTrack1->eta(),iTrack1->phi(), pdg.PDG_PION_MASS);
+	p4muhnl.SetPtEtaPhiM(iMuonHnl->pt(), iMuonHnl->eta(), iMuonHnl->phi(), pdg.PDG_MUON_MASS);
 
-	if ((p4mu1 + p4mu2 + p4pi1).M() > mumupi_mass_cut_) continue;
-	if ((p4mu1 + p4pi1).M() >  mupi_mass_high_cut_) continue;
-	if ((p4mu1 + p4pi1).M() <  mupi_mass_low_cut_) continue;
-	if ((p4mu1 + p4pi1).Pt() <  mupi_pt_cut_) continue;
+	if ((p4muhnl + p4mubs + p4pi).M() > mumupi_mass_cut_) continue;
+	if ((p4muhnl + p4pi).M() >  mupi_mass_high_cut_) continue;
+	if ((p4muhnl + p4pi).M() <  mupi_mass_low_cut_) continue;
+	if ((p4muhnl + p4pi).Pt() <  mupi_pt_cut_) continue;
 
 
-	TransientTrack muon1TT((*TTrackBuilder).build(inTrackMu1));
+	TransientTrack muonHnlTT((*TTrackBuilder).build(inTrackMuHnl));
 	TransientTrack pion1TT((*TTrackBuilder).build(iTrack1->pseudoTrack()));
 
 
-	if(!muon1TT.isValid()) continue;
+	if(!muonHnlTT.isValid()) continue;
 	if(!pion1TT.isValid()) continue;
-	if(muon1TT == pion1TT) continue;
+	if(muonHnlTT == pion1TT) continue;
 
 
 	float muon_sigma = pdg.PDG_MUON_MASS * 1.e-6;
@@ -729,7 +843,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	float ndf = 0.;
 
 	vector < RefCountedKinematicParticle > hnlParticles;
-	hnlParticles.push_back(pFactory.particle(muon1TT, pdg.PM_PDG_MUON_MASS, chi, ndf, muon_sigma));
+	hnlParticles.push_back(pFactory.particle(muonHnlTT, pdg.PM_PDG_MUON_MASS, chi, ndf, muon_sigma));
 	hnlParticles.push_back(pFactory.particle(pion1TT, pdg.PM_PDG_PION_MASS, chi, ndf, muon_sigma));
 	KinematicParticleVertexFitter hnlToPiMu_vertexFitter;
 	RefCountedKinematicTree hnlToPiMu_kinTree;
@@ -738,28 +852,28 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	if (!hnlToPiMu_kinTree->isValid()) continue;
 
 	hnlToPiMu_kinTree->movePointerToTheTop();
-	RefCountedKinematicParticle muPi_particle = hnlToPiMu_kinTree->currentParticle();
-	RefCountedKinematicVertex   muPi_vtx      = hnlToPiMu_kinTree->currentDecayVertex();
+	RefCountedKinematicParticle hnl_particle = hnlToPiMu_kinTree->currentParticle();
+	RefCountedKinematicVertex   hnl_vtx      = hnlToPiMu_kinTree->currentDecayVertex();
 
 
-	double muPi_mass = muPi_particle->currentState().mass();
+	double hnl_mass = hnl_particle->currentState().mass();
 
-	//if ( muPi_mass >  mupi_mass_high_cut_) continue;
+	//if ( hnl_mass >  mupi_mass_high_cut_) continue;
 
 
-	double muPi_vtxprob = TMath::Prob(muPi_vtx->chiSquared(), muPi_vtx->degreesOfFreedom());
-	if(muPi_vtxprob < vtx_prob_cut_) continue;
+	double hnl_vtxprob = TMath::Prob(hnl_vtx->chiSquared(), hnl_vtx->degreesOfFreedom());
+	if(hnl_vtxprob < vtx_prob_cut_) continue;
 
 
 	bool hnl_mu_match = false;
-	bool isMCMatchedMuon1 = false;
+	bool isMCMatchedMuonHnl = false;
 
-	if(run==1){
-	  int match_mu1_idx = getMatchedGenPartIdx(iMuon1->pt(),iMuon1->eta(),iMuon1->phi(),13,*packedGenParticleCollection);
+	if(run==1 && isSignal>0){
+	  int match_C_mu_Hnl_idx = getMatchedGenPartIdx(iMuonHnl->pt(),iMuonHnl->eta(),iMuonHnl->phi(),13,*packedGenParticleCollection);
 
-	  if (match_mu1_idx>0){
-	    isMCMatchedMuon1 = true;
-	    pat::PackedGenParticle matchedGenMuon = (*packedGenParticleCollection).at(match_mu1_idx);
+	  if (match_C_mu_Hnl_idx>0){
+	    isMCMatchedMuonHnl = true;
+	    pat::PackedGenParticle matchedGenMuon = (*packedGenParticleCollection).at(match_C_mu_Hnl_idx);
 	    if (matchedGenMuon.motherRef().isNonnull() &&
 		matchedGenMuon.motherRef().isAvailable() &&
 		std::abs(matchedGenMuon.mother(0)->pdgId()) == 9900015 ){
@@ -768,107 +882,32 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	  }
 	}
 
-	reco::Vertex refitted_vertex_best = thePrimaryV;
-
-	//Do not perfrorm vertex refit
-	//at the moment to help speed up the production
-	//Maybe it is not even needed
-
-
-	/*
-	   Double_t refittedVertex_x = -9999.; 
-	   Double_t refittedVertex_y = -9999.; 
-	   Double_t refittedVertex_z = -9999.; 
-	   Double_t refittedVertex_xErr = -9999.; 
-	   Double_t refittedVertex_yErr = -9999.; 
-	   Double_t refittedVertex_zErr = -9999.; 
-	   Double_t refittedVertex_prob = -9999.; 
-	   Double_t refittedVertex_dN = 0.; 
-	   Double_t cos3D_best = -9999. ; 
-	   Double_t cos2D_best = -9999. ; 
-
-	   for (size_t i = 0; i < recVtxs->size(); ++i) {
-	   const reco::Vertex &recoVertex = (*recVtxs)[i];
-	   std::vector <reco::TransientTrack> vertexTransientTracks_refit;
-
-	   for (std::vector<TrackBaseRef>::const_iterator iTrack = recoVertex.tracks_begin(); iTrack != recoVertex.tracks_end(); ++iTrack) {
-	   TrackRef trackRef = iTrack->castTo<TrackRef>();
-	   if (!(inTrackMu1==trackRef || iTrack1->bestTrack()==trackRef.get()))
-	   {
-	   TransientTrack tt(trackRef, &(*bFieldHandle));
-	   vertexTransientTracks_refit.push_back(tt);
-	   }
-	   }
-
-	   reco::Vertex refitted_vertex = recoVertex;
-
-	   if (vertexTransientTracks_refit.size() > 0 && (recoVertex.tracksSize() != vertexTransientTracks_refit.size())) {
-	   GlobalPoint vextex_glbPoint = GlobalPoint(recoVertex.x(), recoVertex.y(), recoVertex.z());
-	   AdaptiveVertexFitter theFitter;
-	   TransientVertex v = theFitter.vertex(vertexTransientTracks_refit, vextex_glbPoint);
-	   if (v.isValid()) {
-	   refitted_vertex = reco::Vertex(v);
-	   }
-	   }
-
-	   Double_t dx = muPi_vtx->position().x() - refitted_vertex.x();
-	   Double_t dy = muPi_vtx->position().y() - refitted_vertex.y();
-	   Double_t dz = muPi_vtx->position().z() - refitted_vertex.z();
-	   Double_t px = muPi_particle->currentState().globalMomentum().x();
-	   Double_t py = muPi_particle->currentState().globalMomentum().y();
-	   Double_t pz = muPi_particle->currentState().globalMomentum().z();
-	   Double_t cos3D = (px*dx + py*dy + pz*dz)/(sqrt(dx*dx + dy*dy + dz*dz)*muPi_particle->currentState().globalMomentum().mag());
-	   Double_t cos2D = (px*dx + py*dy)/(sqrt(dx*dx + dy*dy)*sqrt(px*px + py*py));
-
-	   if (cos3D > cos3D_best) {
-	   cos3D_best = cos3D;
-	   cos2D_best = cos2D;
-	   refittedVertex_x    = refitted_vertex.x();
-	   refittedVertex_y    = refitted_vertex.y();
-	   refittedVertex_z    = refitted_vertex.z();
-	   refittedVertex_xErr = refitted_vertex.covariance(0, 0);
-	   refittedVertex_yErr = refitted_vertex.covariance(1, 1);
-	   refittedVertex_zErr = refitted_vertex.covariance(2, 2);
-	   refittedVertex_prob = (TMath::Prob(refitted_vertex.chi2(), (int) refitted_vertex.ndof()));
-	   refittedVertex_dN   = recoVertex.tracksSize() - vertexTransientTracks_refit.size();
-	   refitted_vertex_best = refitted_vertex;
-	   }
-	   }
-	   */
-
-	//Vertex has not been refitted here!!
-	Double_t refittedVertex_x    = refitted_vertex_best.x();
-	Double_t refittedVertex_y    = refitted_vertex_best.y();
-	Double_t refittedVertex_z    = refitted_vertex_best.z();
-	Double_t refittedVertex_xErr = refitted_vertex_best.covariance(0, 0);
-	Double_t refittedVertex_yErr = refitted_vertex_best.covariance(1, 1);
-	Double_t refittedVertex_zErr = refitted_vertex_best.covariance(2, 2);
-	Double_t refittedVertex_prob = (TMath::Prob(refitted_vertex_best.chi2(), (int) refitted_vertex_best.ndof()));
-
 	//compute cos2D and cos3D wrt beam spot
-	Double_t dx = muPi_vtx->position().x() - (*theBeamSpot).position().x();
-	Double_t dy = muPi_vtx->position().y() - (*theBeamSpot).position().y();
-	Double_t dz = muPi_vtx->position().z() - (*theBeamSpot).position().z();
-	Double_t px = muPi_particle->currentState().globalMomentum().x();
-	Double_t py = muPi_particle->currentState().globalMomentum().y();
-	Double_t pz = muPi_particle->currentState().globalMomentum().z();
-	Double_t cos3D_best = (px*dx + py*dy + pz*dz)/(sqrt(dx*dx + dy*dy + dz*dz)*muPi_particle->currentState().globalMomentum().mag());
+	Double_t dx = hnl_vtx->position().x() - (*theBeamSpot).position().x();
+	Double_t dy = hnl_vtx->position().y() - (*theBeamSpot).position().y();
+	Double_t dz = hnl_vtx->position().z() - (*theBeamSpot).position().z();
+	Double_t px = hnl_particle->currentState().globalMomentum().x();
+	Double_t py = hnl_particle->currentState().globalMomentum().y();
+	Double_t pz = hnl_particle->currentState().globalMomentum().z();
+	Double_t pt = TMath::Sqrt(px*px + py*py);
+	Double_t cos3D_best = (px*dx + py*dy + pz*dz)/(sqrt(dx*dx + dy*dy + dz*dz)*hnl_particle->currentState().globalMomentum().mag());
 	Double_t cos2D_best = (px*dx + py*dy)/(sqrt(dx*dx + dy*dy)*sqrt(px*px + py*py));
 
-	Double_t vx    = muPi_vtx->position().x();
-	Double_t vy    = muPi_vtx->position().y();
-	Double_t vz    = muPi_vtx->position().z();
-	Double_t vxErr = muPi_vtx->error().cxx();
-	Double_t vyErr = muPi_vtx->error().cyy();
-	Double_t vzErr = muPi_vtx->error().czz();
+	Double_t vx    = hnl_vtx->position().x();
+	Double_t vy    = hnl_vtx->position().y();
+	Double_t vz    = hnl_vtx->position().z();
+	Double_t vxErr = hnl_vtx->error().cxx();
+	Double_t vyErr = hnl_vtx->error().cyy();
+	Double_t vzErr = hnl_vtx->error().czz();
 
 	//   SAVE
-	C_Hnl_vertex_prob ->push_back(muPi_vtxprob);
-	C_Hnl_mass ->push_back(muPi_mass);
-	C_Hnl_preFit_mass ->push_back((p4mu1 + p4pi1).M());
-	C_Hnl_px ->push_back(muPi_particle->currentState().globalMomentum().x());
-	C_Hnl_py ->push_back(muPi_particle->currentState().globalMomentum().y());
-	C_Hnl_pz ->push_back(muPi_particle->currentState().globalMomentum().z());
+	C_Hnl_vertex_prob ->push_back(hnl_vtxprob);
+	C_Hnl_mass ->push_back(hnl_mass);
+	C_Hnl_preFit_mass ->push_back((p4muhnl + p4pi).M());
+	C_Hnl_px ->push_back(px);
+	C_Hnl_py ->push_back(py);
+	C_Hnl_pz ->push_back(pz);
+	C_Hnl_pt ->push_back(pt);
 	C_Hnl_vertex_x   ->push_back(vx);
 	C_Hnl_vertex_y   ->push_back(vy);
 	C_Hnl_vertex_z   ->push_back(vz);
@@ -879,134 +918,77 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	C_Hnl_vertex_cos3D->push_back(cos3D_best);
 	C_Hnl_vertex_cos2D->push_back(cos2D_best);
 
-	C_mu1_px ->push_back(p4mu1.Px());
-	C_mu1_py ->push_back(p4mu1.Py());
-	C_mu1_pz ->push_back(p4mu1.Pz());
-	C_mu1_eta ->push_back(p4mu1.Eta());
-	C_mu1_phi ->push_back(p4mu1.Phi());
-	C_mu1_BS_ips_xy ->push_back(iMuon1->dB(pat::Muon::BS2D)/iMuon1->edB(pat::Muon::BS2D));
-	C_mu1_BS_ips    ->push_back(iMuon1->dB(pat::Muon::BS3D)/iMuon1->edB(pat::Muon::BS3D));
-	C_mu1_PV_ips_z  ->push_back(iMuon1->dB(pat::Muon::PVDZ)/iMuon1->edB(pat::Muon::PVDZ));
-	C_mu1_BS_ip_xy  ->push_back(iMuon1->dB(pat::Muon::BS2D));
-	C_mu1_BS_ip     ->push_back(iMuon1->dB(pat::Muon::BS3D));
-	C_mu1_PV_ip_z   ->push_back(iMuon1->dB(pat::Muon::PVDZ));
-	C_mu1_isHnlDaughter->push_back(hnl_mu_match ? 1 : 0);
-	C_mu1_charge->push_back(iMuon1->charge());
-	C_mu1_isSoft   ->push_back(isSoftMuon1? 1: 0);
-	C_mu1_isLoose  ->push_back(isLooseMuon1? 1: 0);
-	C_mu1_isMedium ->push_back(isMediumMuon1? 1: 0);
-	C_mu1_isGlobal   ->push_back(isGlobalMuon1? 1: 0);
-	C_mu1_isTracker  ->push_back(isTrackerMuon1? 1: 0);
-	C_mu1_isStandAlone ->push_back(isStandAloneMuon1? 1: 0);
-	C_mu1_isMCMatched ->push_back(isMCMatchedMuon1? 1: 0);
+	C_mu_Hnl_px ->push_back(p4muhnl.Px());
+	C_mu_Hnl_py ->push_back(p4muhnl.Py());
+	C_mu_Hnl_pz ->push_back(p4muhnl.Pz());
+	C_mu_Hnl_pt ->push_back(p4muhnl.Pt());
+	C_mu_Hnl_eta ->push_back(p4muhnl.Eta());
+	C_mu_Hnl_phi ->push_back(p4muhnl.Phi());
+	C_mu_Hnl_BS_ips_xy ->push_back(iMuonHnl->dB(pat::Muon::BS2D)/iMuonHnl->edB(pat::Muon::BS2D));
+	C_mu_Hnl_BS_ips    ->push_back(iMuonHnl->dB(pat::Muon::BS3D)/iMuonHnl->edB(pat::Muon::BS3D));
+	C_mu_Hnl_PV_ips_z  ->push_back(iMuonHnl->dB(pat::Muon::PVDZ)/iMuonHnl->edB(pat::Muon::PVDZ));
+	C_mu_Hnl_BS_ip_xy  ->push_back(iMuonHnl->dB(pat::Muon::BS2D));
+	C_mu_Hnl_BS_ip     ->push_back(iMuonHnl->dB(pat::Muon::BS3D));
+	C_mu_Hnl_PV_ip_z   ->push_back(iMuonHnl->dB(pat::Muon::PVDZ));
+	C_mu_Hnl_isHnlDaughter->push_back(hnl_mu_match ? 1 : 0);
+	C_mu_Hnl_charge->push_back(iMuonHnl->charge());
+	C_mu_Hnl_isSoft   ->push_back(isSoftMuonHnl? 1: 0);
+	C_mu_Hnl_isLoose  ->push_back(isLooseMuonHnl? 1: 0);
+	C_mu_Hnl_isMedium ->push_back(isMediumMuonHnl? 1: 0);
+	C_mu_Hnl_isGlobal   ->push_back(isGlobalMuonHnl? 1: 0);
+	C_mu_Hnl_isTracker  ->push_back(isTrackerMuonHnl? 1: 0);
+	C_mu_Hnl_isStandAlone ->push_back(isStandAloneMuonHnl? 1: 0);
+	C_mu_Hnl_isMCMatched ->push_back(isMCMatchedMuonHnl? 1: 0);
+	C_mu_Hnl_idx ->push_back(i_muhnl);
 
 
-	C_trigMu_px ->push_back(p4mu2.Px());
-	C_trigMu_py ->push_back(p4mu2.Py());
-	C_trigMu_pz ->push_back(p4mu2.Pz());
-	C_trigMu_eta ->push_back(p4mu2.Eta());
-	C_trigMu_phi ->push_back(p4mu2.Phi());
-	C_trigMu_BS_ips_xy ->push_back(iTrigMuon->dB(pat::Muon::BS2D)/iTrigMuon->edB(pat::Muon::BS2D));
-	C_trigMu_BS_ips    ->push_back(iTrigMuon->dB(pat::Muon::BS3D)/iTrigMuon->edB(pat::Muon::BS3D));
-	C_trigMu_PV_ips_z  ->push_back(iTrigMuon->dB(pat::Muon::PVDZ)/iTrigMuon->edB(pat::Muon::PVDZ));
-	C_trigMu_BS_ip_xy  ->push_back(iTrigMuon->dB(pat::Muon::BS2D));
-	C_trigMu_BS_ip     ->push_back(iTrigMuon->dB(pat::Muon::BS3D));
-	C_trigMu_PV_ip_z   ->push_back(iTrigMuon->dB(pat::Muon::PVDZ));
-	C_trigMu_charge ->push_back(iTrigMuon->charge());
-	C_trigMu_isHnlBrother->push_back(is_hnl_brother ? 1 : 0);
-	C_trigMu_isSoft   ->push_back(isSoftTrigMuon? 1: 0);
-	C_trigMu_isLoose  ->push_back(isLooseTrigMuon? 1: 0);
-	C_trigMu_isMedium ->push_back(isMediumTrigMuon? 1: 0);
-	C_trigMu_isGlobal   ->push_back(isGlobalTrigMuon? 1: 0);
-	C_trigMu_isTracker  ->push_back(isTrackerTrigMuon? 1: 0);
-	C_trigMu_isStandAlone ->push_back(isStandAloneTrigMuon? 1: 0);
-	C_trigMu_isMCMatched ->push_back(isMCMatchedTrigMuon? 1: 0);
+	C_mu_B_px ->push_back(p4mubs.Px());
+	C_mu_B_py ->push_back(p4mubs.Py());
+	C_mu_B_pz ->push_back(p4mubs.Pz());
+	C_mu_B_pt ->push_back(p4mubs.Pt());
+	C_mu_B_eta ->push_back(p4mubs.Eta());
+	C_mu_B_phi ->push_back(p4mubs.Phi());
+	C_mu_B_BS_ips_xy ->push_back(iMuonBs->dB(pat::Muon::BS2D)/iMuonBs->edB(pat::Muon::BS2D));
+	C_mu_B_BS_ips    ->push_back(iMuonBs->dB(pat::Muon::BS3D)/iMuonBs->edB(pat::Muon::BS3D));
+	C_mu_B_PV_ips_z  ->push_back(iMuonBs->dB(pat::Muon::PVDZ)/iMuonBs->edB(pat::Muon::PVDZ));
+	C_mu_B_BS_ip_xy  ->push_back(iMuonBs->dB(pat::Muon::BS2D));
+	C_mu_B_BS_ip     ->push_back(iMuonBs->dB(pat::Muon::BS3D));
+	C_mu_B_PV_ip_z   ->push_back(iMuonBs->dB(pat::Muon::PVDZ));
+	C_mu_B_charge ->push_back(iMuonBs->charge());
+	C_mu_B_isHnlBrother->push_back(is_hnl_brother ? 1 : 0);
+	C_mu_B_isSoft   ->push_back(isSoftMuonBs? 1: 0);
+	C_mu_B_isLoose  ->push_back(isLooseMuonBs? 1: 0);
+	C_mu_B_isMedium ->push_back(isMediumMuonBs? 1: 0);
+	C_mu_B_isGlobal   ->push_back(isGlobalMuonBs? 1: 0);
+	C_mu_B_isTracker  ->push_back(isTrackerMuonBs? 1: 0);
+	C_mu_B_isStandAlone ->push_back(isStandAloneMuonBs? 1: 0);
+	C_mu_B_isMCMatched ->push_back(isMCMatchedBsMuon? 1: 0);
+	C_mu_B_idx ->push_back(i_mub);
 
 	C_pi_charge ->push_back(iTrack1->charge());
-	C_pi_px ->push_back(p4pi1.Px());
-	C_pi_py ->push_back(p4pi1.Py());
-	C_pi_pz ->push_back(p4pi1.Pz());
-	C_pi_eta ->push_back(p4pi1.Eta());
-	C_pi_phi ->push_back(p4pi1.Phi());
+	C_pi_px ->push_back(p4pi.Px());
+	C_pi_py ->push_back(p4pi.Py());
+	C_pi_pz ->push_back(p4pi.Pz());
+	C_pi_pt ->push_back(p4pi.Pt());
+	C_pi_eta ->push_back(p4pi.Eta());
+	C_pi_phi ->push_back(p4pi.Phi());
 	C_pi_BS_ips_xy->push_back(std::abs(iTrack1->dxy((*theBeamSpot).position()))/std::abs(iTrack1->dxyError()));
 	C_pi_BS_ips_z ->push_back(std::abs(iTrack1->dz ((*theBeamSpot).position()))/std::abs(iTrack1->dzError()));
 	C_pi_BS_ip_xy ->push_back(std::abs(iTrack1->dxy((*theBeamSpot).position())));
 	C_pi_BS_ip_z  ->push_back(std::abs(iTrack1->dz ((*theBeamSpot).position())));
 	C_pi_isMCMatched ->push_back(isMCMatchedTrack1? 1: 0);
-	C_pi_isHnlDaughter->push_back(hnl_pi_match ? 1 : 0);
+	C_pi_isHnlDaughter->push_back(hnl_C_pi_match ? 1 : 0);
 
-	C_mass->push_back((p4mu1 + p4mu2 + p4pi1).M());
-	C_mu1mu2_mass->push_back((p4mu1 + p4mu2).M());
-	C_mu1mu2_dr->push_back(deltaR(*iMuon1,*iTrigMuon));
-	C_mu1pi_dr->push_back(deltaR(*iMuon1,*iTrack1));
-	C_mu2pi_dr->push_back(deltaR(*iTrigMuon,*iTrack1));
-	C_px ->push_back((p4mu1 + p4mu2 + p4pi1).Px());
-	C_py ->push_back((p4mu1 + p4mu2 + p4pi1).Py());
-	C_pz ->push_back((p4mu1 + p4mu2 + p4pi1).Pz());
+	C_B_mass->push_back((p4muhnl + p4mubs + p4pi).M());
+	C_B_px ->push_back((p4muhnl + p4mubs + p4pi).Px());
+	C_B_py ->push_back((p4muhnl + p4mubs + p4pi).Py());
+	C_B_pz ->push_back((p4muhnl + p4mubs + p4pi).Pz());
+	C_B_pt ->push_back((p4muhnl + p4mubs + p4pi).Pt());
 
-	PV_x ->push_back(refittedVertex_x);
-	PV_y ->push_back(refittedVertex_y);
-	PV_z ->push_back(refittedVertex_z);
-	PV_xErr ->push_back(refittedVertex_xErr);
-	PV_yErr ->push_back(refittedVertex_yErr);
-	PV_zErr ->push_back(refittedVertex_zErr);
-	PV_prob ->push_back(refittedVertex_prob);
-	//PV_dN ->push_back(refittedVertex_dN);
-
-	mu7_ip4_matched->push_back(TriggerMatches[0]);
-	mu8_ip3_matched->push_back(TriggerMatches[1]);
-	mu8_ip3p5_matched ->push_back(TriggerMatches[2]);
-	mu8_ip5_matched->push_back(TriggerMatches[3]);
-	mu8_ip6_matched->push_back(TriggerMatches[4]);
-	mu9_ip4_matched->push_back(TriggerMatches[5]);
-	mu9_ip5_matched->push_back(TriggerMatches[6]);
-	mu9_ip6_matched->push_back(TriggerMatches[7]);
-	mu10p5_ip3p5_matched->push_back(TriggerMatches[8]);
-	mu12_ip6_matched->push_back(TriggerMatches[9]);
-
-	mu7_ip4_eta->push_back(TriggerPathEta[0]);
-	mu8_ip3_eta->push_back(TriggerPathEta[1]);
-	mu8_ip3p5_eta ->push_back(TriggerPathEta[2]);
-	mu8_ip5_eta->push_back(TriggerPathEta[3]);
-	mu8_ip6_eta->push_back(TriggerPathEta[4]);
-	mu9_ip4_eta->push_back(TriggerPathEta[5]);
-	mu9_ip5_eta->push_back(TriggerPathEta[6]);
-	mu9_ip6_eta->push_back(TriggerPathEta[7]);
-	mu10p5_ip3p5_eta->push_back(TriggerPathEta[8]);
-	mu12_ip6_eta->push_back(TriggerPathEta[9]);
-
-	mu7_ip4_pt->push_back(TriggerPathPt[0]);
-	mu8_ip3_pt->push_back(TriggerPathPt[1]);
-	mu8_ip3p5_pt ->push_back(TriggerPathPt[2]);
-	mu8_ip5_pt->push_back(TriggerPathPt[3]);
-	mu8_ip6_pt->push_back(TriggerPathPt[4]);
-	mu9_ip4_pt->push_back(TriggerPathPt[5]);
-	mu9_ip5_pt->push_back(TriggerPathPt[6]);
-	mu9_ip6_pt->push_back(TriggerPathPt[7]);
-	mu10p5_ip3p5_pt->push_back(TriggerPathPt[8]);
-	mu12_ip6_pt->push_back(TriggerPathPt[9]);
-
-	mu7_ip4_dr->push_back(TriggerPathDR[0]);
-	mu8_ip3_dr->push_back(TriggerPathDR[1]);
-	mu8_ip3p5_dr ->push_back(TriggerPathDR[2]);
-	mu8_ip5_dr->push_back(TriggerPathDR[3]);
-	mu8_ip6_dr->push_back(TriggerPathDR[4]);
-	mu9_ip4_dr->push_back(TriggerPathDR[5]);
-	mu9_ip5_dr->push_back(TriggerPathDR[6]);
-	mu9_ip6_dr->push_back(TriggerPathDR[7]);
-	mu10p5_ip3p5_dr->push_back(TriggerPathDR[8]);
-	mu12_ip6_dr->push_back(TriggerPathDR[9]);
-
-	mu7_ip4_fired->push_back(TriggersFired[0]);
-	mu8_ip3_fired->push_back(TriggersFired[1]);
-	mu8_ip3p5_fired ->push_back(TriggersFired[2]);
-	mu8_ip5_fired->push_back(TriggersFired[3]);
-	mu8_ip6_fired->push_back(TriggersFired[4]);
-	mu9_ip4_fired->push_back(TriggersFired[5]);
-	mu9_ip5_fired->push_back(TriggersFired[6]);
-	mu9_ip6_fired->push_back(TriggersFired[7]);
-	mu10p5_ip3p5_fired->push_back(TriggersFired[8]);
-	mu12_ip6_fired->push_back(TriggersFired[9]);
+	C_mu1mu2_mass->push_back((p4muhnl + p4mubs).M());
+	C_mu1mu2_dr->push_back(deltaR(*iMuonHnl,*iMuonBs));
+	C_mu1pi_dr->push_back(deltaR(*iMuonHnl,*iTrack1));
+	C_mu2pi_dr->push_back(deltaR(*iMuonBs,*iTrack1));
 
 	++nCand;
 
@@ -1034,6 +1016,7 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   C_Hnl_px->clear();
   C_Hnl_py->clear();
   C_Hnl_pz->clear();
+  C_Hnl_pt->clear();
   C_Hnl_vertex_x->clear();
   C_Hnl_vertex_y->clear();
   C_Hnl_vertex_z->clear();
@@ -1044,58 +1027,66 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   C_Hnl_vertex_cos3D->clear();
   C_Hnl_vertex_cos2D->clear();
   //
-  C_mu1_px->clear();
-  C_mu1_py->clear();
-  C_mu1_pz->clear();
-  C_mu1_eta->clear();
-  C_mu1_phi->clear();
-  C_mu1_BS_ips_xy->clear();
-  C_mu1_BS_ips->clear();
-  C_mu1_PV_ips_z->clear();
-  C_mu1_BS_ip_xy->clear();
-  C_mu1_BS_ip->clear();
-  C_mu1_PV_ip_z->clear();
-  C_mu1_charge->clear();
-  C_mu1_isSoft->clear();
-  C_mu1_isLoose->clear();
-  C_mu1_isMedium->clear();
-  C_mu1_isGlobal->clear();
-  C_mu1_isTracker->clear();
-  C_mu1_isStandAlone->clear();
-  C_mu1_isMCMatched->clear();
+  C_mu_Hnl_px->clear();
+  C_mu_Hnl_py->clear();
+  C_mu_Hnl_pz->clear();
+  C_mu_Hnl_pt->clear();
+  C_mu_Hnl_eta->clear();
+  C_mu_Hnl_phi->clear();
+  C_mu_Hnl_BS_ips_xy->clear();
+  C_mu_Hnl_BS_ips->clear();
+  C_mu_Hnl_PV_ips_z->clear();
+  C_mu_Hnl_BS_ip_xy->clear();
+  C_mu_Hnl_BS_ip->clear();
+  C_mu_Hnl_PV_ip_z->clear();
+  C_mu_Hnl_charge->clear();
+  C_mu_Hnl_isSoft->clear();
+  C_mu_Hnl_isLoose->clear();
+  C_mu_Hnl_isMedium->clear();
+  C_mu_Hnl_isGlobal->clear();
+  C_mu_Hnl_isTracker->clear();
+  C_mu_Hnl_isStandAlone->clear();
+  C_mu_Hnl_isMCMatched->clear();
+  C_mu_Hnl_idx->clear();
 
-  C_trigMu_px->clear();
-  C_trigMu_py->clear();
-  C_trigMu_pz->clear();
-  C_trigMu_eta->clear();
-  C_trigMu_phi->clear();
-  C_trigMu_BS_ips_xy->clear();
-  C_trigMu_BS_ips->clear();
-  C_trigMu_PV_ips_z->clear();
-  C_trigMu_BS_ip_xy->clear();
-  C_trigMu_BS_ip->clear();
-  C_trigMu_PV_ip_z->clear();
-  C_trigMu_charge->clear();
-  C_trigMu_isSoft->clear();
-  C_trigMu_isLoose->clear();
-  C_trigMu_isMedium->clear();
-  C_trigMu_isGlobal->clear();
-  C_trigMu_isTracker->clear();
-  C_trigMu_isStandAlone->clear();
-  C_trigMu_isMCMatched->clear();
-  //
-  C_mass->clear();
+  C_mu_B_px->clear();
+  C_mu_B_py->clear();
+  C_mu_B_pz->clear();
+  C_mu_B_pt->clear();
+  C_mu_B_eta->clear();
+  C_mu_B_phi->clear();
+  C_mu_B_BS_ips_xy->clear();
+  C_mu_B_BS_ips->clear();
+  C_mu_B_PV_ips_z->clear();
+  C_mu_B_BS_ip_xy->clear();
+  C_mu_B_BS_ip->clear();
+  C_mu_B_PV_ip_z->clear();
+  C_mu_B_charge->clear();
+  C_mu_B_isSoft->clear();
+  C_mu_B_isLoose->clear();
+  C_mu_B_isMedium->clear();
+  C_mu_B_isGlobal->clear();
+  C_mu_B_isTracker->clear();
+  C_mu_B_isStandAlone->clear();
+  C_mu_B_isMCMatched->clear();
+  C_mu_B_idx->clear();
+
+  C_B_mass->clear();
+  C_B_px->clear();
+  C_B_py->clear();
+  C_B_pz->clear();
+  C_B_pt->clear();
+
   C_mu1mu2_mass->clear();
   C_mu1mu2_dr->clear();
   C_mu1pi_dr->clear();
   C_mu2pi_dr->clear();
+
   C_pi_charge->clear();
-  C_px->clear();
-  C_py->clear();
-  C_pz->clear();
   C_pi_px->clear(); 
   C_pi_py->clear();
   C_pi_pz->clear();
+  C_pi_pt->clear();
   C_pi_eta->clear();
   C_pi_phi->clear();
   C_pi_BS_ips_xy->clear();
@@ -1108,64 +1099,68 @@ hnlAnalyzer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   PV_xErr->clear();   PV_yErr->clear();   PV_zErr->clear();
   PV_prob->clear();   //PV_dN->clear();
 
-  mu7_ip4_matched->clear();
-  mu8_ip3_matched->clear();
-  mu8_ip3p5_matched ->clear();
-  mu8_ip5_matched->clear();
-  mu8_ip6_matched->clear();
-  mu9_ip4_matched->clear();
-  mu9_ip5_matched->clear();
-  mu9_ip6_matched->clear();
-  mu10p5_ip3p5_matched->clear();
-  mu12_ip6_matched->clear();
+  HLT_mu_trig_idx->clear();
+  HLT_mu_trig_pt->clear();
+  HLT_mu_trig_eta->clear();
 
-  mu7_ip4_eta->clear();
-  mu8_ip3_eta->clear();
-  mu8_ip3p5_eta ->clear();
-  mu8_ip5_eta->clear();
-  mu8_ip6_eta->clear();
-  mu9_ip4_eta->clear();
-  mu9_ip5_eta->clear();
-  mu9_ip6_eta->clear();
-  mu10p5_ip3p5_eta->clear();
-  mu12_ip6_eta->clear();
+  HLT_mu7_ip4_matched->clear();
+  HLT_mu8_ip3_matched->clear();
+  HLT_mu8_ip3p5_matched ->clear();
+  HLT_mu8_ip5_matched->clear();
+  HLT_mu8_ip6_matched->clear();
+  HLT_mu9_ip4_matched->clear();
+  HLT_mu9_ip5_matched->clear();
+  HLT_mu9_ip6_matched->clear();
+  HLT_mu10p5_ip3p5_matched->clear();
+  HLT_mu12_ip6_matched->clear();
 
-  mu7_ip4_pt->clear();
-  mu8_ip3_pt->clear();
-  mu8_ip3p5_pt ->clear();
-  mu8_ip5_pt->clear();
-  mu8_ip6_pt->clear();
-  mu9_ip4_pt->clear();
-  mu9_ip5_pt->clear();
-  mu9_ip6_pt->clear();
-  mu10p5_ip3p5_pt->clear();
-  mu12_ip6_pt->clear();
+  HLT_mu7_ip4_eta->clear();
+  HLT_mu8_ip3_eta->clear();
+  HLT_mu8_ip3p5_eta ->clear();
+  HLT_mu8_ip5_eta->clear();
+  HLT_mu8_ip6_eta->clear();
+  HLT_mu9_ip4_eta->clear();
+  HLT_mu9_ip5_eta->clear();
+  HLT_mu9_ip6_eta->clear();
+  HLT_mu10p5_ip3p5_eta->clear();
+  HLT_mu12_ip6_eta->clear();
 
-  mu7_ip4_dr->clear();
-  mu8_ip3_dr->clear();
-  mu8_ip3p5_dr ->clear();
-  mu8_ip5_dr->clear();
-  mu8_ip6_dr->clear();
-  mu9_ip4_dr->clear();
-  mu9_ip5_dr->clear();
-  mu9_ip6_dr->clear();
-  mu10p5_ip3p5_dr->clear();
-  mu12_ip6_dr->clear();
+  HLT_mu7_ip4_pt->clear();
+  HLT_mu8_ip3_pt->clear();
+  HLT_mu8_ip3p5_pt ->clear();
+  HLT_mu8_ip5_pt->clear();
+  HLT_mu8_ip6_pt->clear();
+  HLT_mu9_ip4_pt->clear();
+  HLT_mu9_ip5_pt->clear();
+  HLT_mu9_ip6_pt->clear();
+  HLT_mu10p5_ip3p5_pt->clear();
+  HLT_mu12_ip6_pt->clear();
 
-  mu7_ip4_fired->clear();
-  mu8_ip3_fired->clear();
-  mu8_ip3p5_fired ->clear();
-  mu8_ip5_fired->clear();
-  mu8_ip6_fired->clear();
-  mu9_ip4_fired->clear();
-  mu9_ip5_fired->clear();
-  mu9_ip6_fired->clear();
-  mu10p5_ip3p5_fired->clear();
-  mu12_ip6_fired->clear();
+  HLT_mu7_ip4_dr->clear();
+  HLT_mu8_ip3_dr->clear();
+  HLT_mu8_ip3p5_dr ->clear();
+  HLT_mu8_ip5_dr->clear();
+  HLT_mu8_ip6_dr->clear();
+  HLT_mu9_ip4_dr->clear();
+  HLT_mu9_ip5_dr->clear();
+  HLT_mu9_ip6_dr->clear();
+  HLT_mu10p5_ip3p5_dr->clear();
+  HLT_mu12_ip6_dr->clear();
+
+  HLT_mu7_ip4_fired->clear();
+  HLT_mu8_ip3_fired->clear();
+  HLT_mu8_ip3p5_fired ->clear();
+  HLT_mu8_ip5_fired->clear();
+  HLT_mu8_ip6_fired->clear();
+  HLT_mu9_ip4_fired->clear();
+  HLT_mu9_ip5_fired->clear();
+  HLT_mu9_ip6_fired->clear();
+  HLT_mu10p5_ip3p5_fired->clear();
+  HLT_mu12_ip6_fired->clear();
 
   C_pi_isHnlDaughter->clear();
-  C_mu1_isHnlDaughter->clear();
-  C_trigMu_isHnlBrother->clear();
+  C_mu_Hnl_isHnlDaughter->clear();
+  C_mu_B_isHnlBrother->clear();
 
 
 }
@@ -1201,7 +1196,7 @@ int hnlAnalyzer_miniAOD::getMatchedGenPartIdx(double pt, double eta, double phi,
       deltaPhi -= float(2 * M_PI);
 
     double deltaR2 = deltaEta*deltaEta + deltaPhi*deltaPhi;
-    if (deltaPt<0.5 && deltaR2<0.25 && deltaR2<max_dr2) {
+    if (deltaPt<0.5 && deltaR2<0.09 && deltaR2<max_dr2) {
       matchedIndex = i;
       max_dr2 = deltaR2;
     }
@@ -1235,6 +1230,7 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("C_Hnl_px", &C_Hnl_px);
   wwtree->Branch("C_Hnl_py", &C_Hnl_py);
   wwtree->Branch("C_Hnl_pz", &C_Hnl_pz);
+  wwtree->Branch("C_Hnl_pt", &C_Hnl_pt);
   wwtree->Branch("C_Hnl_vertex_x" , &C_Hnl_vertex_x);
   wwtree->Branch("C_Hnl_vertex_y" , &C_Hnl_vertex_y);
   wwtree->Branch("C_Hnl_vertex_z" , &C_Hnl_vertex_z);
@@ -1245,58 +1241,66 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("C_Hnl_vertex_cos3D" , &C_Hnl_vertex_cos3D);
   wwtree->Branch("C_Hnl_vertex_cos2D" , &C_Hnl_vertex_cos2D);
 
-  wwtree->Branch("C_mu1_px"    , &C_mu1_px);
-  wwtree->Branch("C_mu1_py"    , &C_mu1_py);
-  wwtree->Branch("C_mu1_pz"    , &C_mu1_pz);
-  wwtree->Branch("C_mu1_eta"   , &C_mu1_eta);
-  wwtree->Branch("C_mu1_phi"   , &C_mu1_phi);
-  wwtree->Branch("C_mu1_BS_ips_xy", &C_mu1_BS_ips_xy);
-  wwtree->Branch("C_mu1_BS_ips", &C_mu1_BS_ips);
-  wwtree->Branch("C_mu1_PV_ips_z" , &C_mu1_PV_ips_z);
-  wwtree->Branch("C_mu1_BS_ip_xy" , &C_mu1_BS_ip_xy);
-  wwtree->Branch("C_mu1_BS_ip" , &C_mu1_BS_ip);
-  wwtree->Branch("C_mu1_PV_ip_z"  , &C_mu1_PV_ip_z);
-  wwtree->Branch("C_mu1_charge", &C_mu1_charge);
-  wwtree->Branch("C_mu1_isSoft", &C_mu1_isSoft);
-  wwtree->Branch("C_mu1_isLoose", &C_mu1_isLoose);
-  wwtree->Branch("C_mu1_isMedium", &C_mu1_isMedium);
-  wwtree->Branch("C_mu1_isGlobal", &C_mu1_isGlobal);
-  wwtree->Branch("C_mu1_isTracker", &C_mu1_isTracker);
-  wwtree->Branch("C_mu1_isStandAlone", &C_mu1_isStandAlone);
-  wwtree->Branch("C_mu1_isMCMatched", &C_mu1_isMCMatched);
+  wwtree->Branch("C_mu_Hnl_px"    , &C_mu_Hnl_px);
+  wwtree->Branch("C_mu_Hnl_py"    , &C_mu_Hnl_py);
+  wwtree->Branch("C_mu_Hnl_pz"    , &C_mu_Hnl_pz);
+  wwtree->Branch("C_mu_Hnl_pt"    , &C_mu_Hnl_pt);
+  wwtree->Branch("C_mu_Hnl_eta"   , &C_mu_Hnl_eta);
+  wwtree->Branch("C_mu_Hnl_phi"   , &C_mu_Hnl_phi);
+  wwtree->Branch("C_mu_Hnl_BS_ips_xy", &C_mu_Hnl_BS_ips_xy);
+  wwtree->Branch("C_mu_Hnl_BS_ips", &C_mu_Hnl_BS_ips);
+  wwtree->Branch("C_mu_Hnl_PV_ips_z" , &C_mu_Hnl_PV_ips_z);
+  wwtree->Branch("C_mu_Hnl_BS_ip_xy" , &C_mu_Hnl_BS_ip_xy);
+  wwtree->Branch("C_mu_Hnl_BS_ip" , &C_mu_Hnl_BS_ip);
+  wwtree->Branch("C_mu_Hnl_PV_ip_z"  , &C_mu_Hnl_PV_ip_z);
+  wwtree->Branch("C_mu_Hnl_charge", &C_mu_Hnl_charge);
+  wwtree->Branch("C_mu_Hnl_isSoft", &C_mu_Hnl_isSoft);
+  wwtree->Branch("C_mu_Hnl_isLoose", &C_mu_Hnl_isLoose);
+  wwtree->Branch("C_mu_Hnl_isMedium", &C_mu_Hnl_isMedium);
+  wwtree->Branch("C_mu_Hnl_isGlobal", &C_mu_Hnl_isGlobal);
+  wwtree->Branch("C_mu_Hnl_isTracker", &C_mu_Hnl_isTracker);
+  wwtree->Branch("C_mu_Hnl_isStandAlone", &C_mu_Hnl_isStandAlone);
+  wwtree->Branch("C_mu_Hnl_isMCMatched", &C_mu_Hnl_isMCMatched);
+  wwtree->Branch("C_mu_Hnl_idx", &C_mu_Hnl_idx);
 
-  wwtree->Branch("C_trigMu_px"    , &C_trigMu_px);
-  wwtree->Branch("C_trigMu_py"    , &C_trigMu_py);
-  wwtree->Branch("C_trigMu_pz"    , &C_trigMu_pz);
-  wwtree->Branch("C_trigMu_eta"   , &C_trigMu_eta);
-  wwtree->Branch("C_trigMu_phi"   , &C_trigMu_phi);
-  wwtree->Branch("C_trigMu_BS_ips_xy", &C_trigMu_BS_ips_xy);
-  wwtree->Branch("C_trigMu_BS_ips", &C_trigMu_BS_ips);
-  wwtree->Branch("C_trigMu_PV_ips_z" , &C_trigMu_PV_ips_z);
-  wwtree->Branch("C_trigMu_BS_ip_xy" , &C_trigMu_BS_ip_xy);
-  wwtree->Branch("C_trigMu_BS_ip" , &C_trigMu_BS_ip);
-  wwtree->Branch("C_trigMu_PV_ip_z"  , &C_trigMu_PV_ip_z);
-  wwtree->Branch("C_trigMu_charge", &C_trigMu_charge);
-  wwtree->Branch("C_trigMu_isSoft", &C_trigMu_isSoft);
-  wwtree->Branch("C_trigMu_isLoose", &C_trigMu_isLoose);
-  wwtree->Branch("C_trigMu_isMedium", &C_trigMu_isMedium);
-  wwtree->Branch("C_trigMu_isGlobal", &C_trigMu_isGlobal);
-  wwtree->Branch("C_trigMu_isTracker", &C_trigMu_isTracker);
-  wwtree->Branch("C_trigMu_isStandAlone", &C_trigMu_isStandAlone);
-  wwtree->Branch("C_trigMu_isMCMatched", &C_trigMu_isMCMatched);
+  wwtree->Branch("C_mu_B_px"    , &C_mu_B_px);
+  wwtree->Branch("C_mu_B_py"    , &C_mu_B_py);
+  wwtree->Branch("C_mu_B_pz"    , &C_mu_B_pz);
+  wwtree->Branch("C_mu_B_pt"    , &C_mu_B_pt);
+  wwtree->Branch("C_mu_B_eta"   , &C_mu_B_eta);
+  wwtree->Branch("C_mu_B_phi"   , &C_mu_B_phi);
+  wwtree->Branch("C_mu_B_BS_ips_xy", &C_mu_B_BS_ips_xy);
+  wwtree->Branch("C_mu_B_BS_ips", &C_mu_B_BS_ips);
+  wwtree->Branch("C_mu_B_PV_ips_z" , &C_mu_B_PV_ips_z);
+  wwtree->Branch("C_mu_B_BS_ip_xy" , &C_mu_B_BS_ip_xy);
+  wwtree->Branch("C_mu_B_BS_ip" , &C_mu_B_BS_ip);
+  wwtree->Branch("C_mu_B_PV_ip_z"  , &C_mu_B_PV_ip_z);
+  wwtree->Branch("C_mu_B_charge", &C_mu_B_charge);
+  wwtree->Branch("C_mu_B_isSoft", &C_mu_B_isSoft);
+  wwtree->Branch("C_mu_B_isLoose", &C_mu_B_isLoose);
+  wwtree->Branch("C_mu_B_isMedium", &C_mu_B_isMedium);
+  wwtree->Branch("C_mu_B_isGlobal", &C_mu_B_isGlobal);
+  wwtree->Branch("C_mu_B_isTracker", &C_mu_B_isTracker);
+  wwtree->Branch("C_mu_B_isStandAlone", &C_mu_B_isStandAlone);
+  wwtree->Branch("C_mu_B_isMCMatched", &C_mu_B_isMCMatched);
+  wwtree->Branch("C_mu_B_idx", &C_mu_B_idx);
 
-  wwtree->Branch("C_mass"            , &C_mass          );
+  wwtree->Branch("C_B_mass"         , &C_B_mass          );
+  wwtree->Branch("C_B_px"            , &C_B_px            );
+  wwtree->Branch("C_B_py"            , &C_B_py            );
+  wwtree->Branch("C_B_pz"            , &C_B_pz            );
+  wwtree->Branch("C_B_pt"            , &C_B_pt            );
+
   wwtree->Branch("C_mu1mu2_mass"     , &C_mu1mu2_mass   );
   wwtree->Branch("C_mu1mu2_dr"       , &C_mu1mu2_dr   );
   wwtree->Branch("C_mu1pi_dr"        , &C_mu1pi_dr   );
   wwtree->Branch("C_mu2pi_dr"        , &C_mu2pi_dr   );
+
   wwtree->Branch("C_pi_charge"       , &C_pi_charge     );
-  wwtree->Branch("C_px"              , &C_px            );
-  wwtree->Branch("C_py"              , &C_py            );
-  wwtree->Branch("C_pz"              , &C_pz            );
   wwtree->Branch("C_pi_px"           , &C_pi_px         );
   wwtree->Branch("C_pi_py"           , &C_pi_py         );
   wwtree->Branch("C_pi_pz"           , &C_pi_pz         );
+  wwtree->Branch("C_pi_pt"           , &C_pi_pt         );
   wwtree->Branch("C_pi_eta"          , &C_pi_eta        );
   wwtree->Branch("C_pi_phi"          , &C_pi_phi        );
   wwtree->Branch("C_pi_BS_ips_xy"       , &C_pi_BS_ips_xy     );
@@ -1305,73 +1309,77 @@ void hnlAnalyzer_miniAOD::beginJob()
   wwtree->Branch("C_pi_BS_ip_z"         , &C_pi_BS_ip_z     );
   wwtree->Branch("C_pi_isMCMatched", &C_pi_isMCMatched);
 
-  wwtree->Branch("PV_x"    , &PV_x);
-  wwtree->Branch("PV_y"    , &PV_y);
-  wwtree->Branch("PV_z"    , &PV_z);
+  wwtree->Branch("PV_x"    , &PV_x   );
+  wwtree->Branch("PV_y"    , &PV_y   );
+  wwtree->Branch("PV_z"    , &PV_z   );
   wwtree->Branch("PV_xErr" , &PV_xErr);
   wwtree->Branch("PV_yErr" , &PV_yErr);
   wwtree->Branch("PV_zErr" , &PV_zErr);
   wwtree->Branch("PV_prob" , &PV_prob);
   //wwtree->Branch("PV_dN"   , &PV_dN);
 
-  wwtree->Branch("mu7_ip4_matched",    &mu7_ip4_matched);
-  wwtree->Branch("mu8_ip3_matched",    &mu8_ip3_matched);
-  wwtree->Branch("mu8_ip3p5_matched",  &mu8_ip3p5_matched);
-  wwtree->Branch("mu8_ip5_matched",    &mu8_ip5_matched);
-  wwtree->Branch("mu8_ip6_matched",    &mu8_ip6_matched);
-  wwtree->Branch("mu9_ip4_matched",    &mu9_ip4_matched);
-  wwtree->Branch("mu9_ip5_matched",    &mu9_ip5_matched);
-  wwtree->Branch("mu9_ip6_matched",    &mu9_ip6_matched);
-  wwtree->Branch("mu10p5_ip3p5_matched", &mu10p5_ip3p5_matched);
-  wwtree->Branch("mu12_ip6_matched",   &mu12_ip6_matched);
+  wwtree->Branch("HLT_mu_trig_idx",    &HLT_mu_trig_idx);
+  wwtree->Branch("HLT_mu_trig_pt",    &HLT_mu_trig_pt);
+  wwtree->Branch("HLT_mu_trig_eta",    &HLT_mu_trig_eta);
 
-  wwtree->Branch("mu7_ip4_eta",    &mu7_ip4_eta);
-  wwtree->Branch("mu8_ip3_eta",    &mu8_ip3_eta);
-  wwtree->Branch("mu8_ip3p5_eta",  &mu8_ip3p5_eta);
-  wwtree->Branch("mu8_ip5_eta",    &mu8_ip5_eta);
-  wwtree->Branch("mu8_ip6_eta",    &mu8_ip6_eta);
-  wwtree->Branch("mu9_ip4_eta",    &mu9_ip4_eta);
-  wwtree->Branch("mu9_ip5_eta",    &mu9_ip5_eta);
-  wwtree->Branch("mu9_ip6_eta",    &mu9_ip6_eta);
-  wwtree->Branch("mu10p5_ip3p5_eta", &mu10p5_ip3p5_eta);
-  wwtree->Branch("mu12_ip6_eta",   &mu12_ip6_eta);
+  wwtree->Branch("HLT_mu7_ip4_matched",    &HLT_mu7_ip4_matched);
+  wwtree->Branch("HLT_mu8_ip3_matched",    &HLT_mu8_ip3_matched);
+  wwtree->Branch("HLT_mu8_ip3p5_matched",  &HLT_mu8_ip3p5_matched);
+  wwtree->Branch("HLT_mu8_ip5_matched",    &HLT_mu8_ip5_matched);
+  wwtree->Branch("HLT_mu8_ip6_matched",    &HLT_mu8_ip6_matched);
+  wwtree->Branch("HLT_mu9_ip4_matched",    &HLT_mu9_ip4_matched);
+  wwtree->Branch("HLT_mu9_ip5_matched",    &HLT_mu9_ip5_matched);
+  wwtree->Branch("HLT_mu9_ip6_matched",    &HLT_mu9_ip6_matched);
+  wwtree->Branch("HLT_mu10p5_ip3p5_matched", &HLT_mu10p5_ip3p5_matched);
+  wwtree->Branch("HLT_mu12_ip6_matched",   &HLT_mu12_ip6_matched);
 
-  wwtree->Branch("mu7_ip4_pt",    &mu7_ip4_pt);
-  wwtree->Branch("mu8_ip3_pt",    &mu8_ip3_pt);
-  wwtree->Branch("mu8_ip3p5_pt",  &mu8_ip3p5_pt);
-  wwtree->Branch("mu8_ip5_pt",    &mu8_ip5_pt);
-  wwtree->Branch("mu8_ip6_pt",    &mu8_ip6_pt);
-  wwtree->Branch("mu9_ip4_pt",    &mu9_ip4_pt);
-  wwtree->Branch("mu9_ip5_pt",    &mu9_ip5_pt);
-  wwtree->Branch("mu9_ip6_pt",    &mu9_ip6_pt);
-  wwtree->Branch("mu10p5_ip3p5_pt", &mu10p5_ip3p5_pt);
-  wwtree->Branch("mu12_ip6_pt",   &mu12_ip6_pt);
+  wwtree->Branch("HLT_mu7_ip4_eta",    &HLT_mu7_ip4_eta);
+  wwtree->Branch("HLT_mu8_ip3_eta",    &HLT_mu8_ip3_eta);
+  wwtree->Branch("HLT_mu8_ip3p5_eta",  &HLT_mu8_ip3p5_eta);
+  wwtree->Branch("HLT_mu8_ip5_eta",    &HLT_mu8_ip5_eta);
+  wwtree->Branch("HLT_mu8_ip6_eta",    &HLT_mu8_ip6_eta);
+  wwtree->Branch("HLT_mu9_ip4_eta",    &HLT_mu9_ip4_eta);
+  wwtree->Branch("HLT_mu9_ip5_eta",    &HLT_mu9_ip5_eta);
+  wwtree->Branch("HLT_mu9_ip6_eta",    &HLT_mu9_ip6_eta);
+  wwtree->Branch("HLT_mu10p5_ip3p5_eta", &HLT_mu10p5_ip3p5_eta);
+  wwtree->Branch("HLT_mu12_ip6_eta",   &HLT_mu12_ip6_eta);
 
-  wwtree->Branch("mu7_ip4_dr",    &mu7_ip4_dr);
-  wwtree->Branch("mu8_ip3_dr",    &mu8_ip3_dr);
-  wwtree->Branch("mu8_ip3p5_dr",  &mu8_ip3p5_dr);
-  wwtree->Branch("mu8_ip5_dr",    &mu8_ip5_dr);
-  wwtree->Branch("mu8_ip6_dr",    &mu8_ip6_dr);
-  wwtree->Branch("mu9_ip4_dr",    &mu9_ip4_dr);
-  wwtree->Branch("mu9_ip5_dr",    &mu9_ip5_dr);
-  wwtree->Branch("mu9_ip6_dr",    &mu9_ip6_dr);
-  wwtree->Branch("mu10p5_ip3p5_dr", &mu10p5_ip3p5_dr);
-  wwtree->Branch("mu12_ip6_dr",   &mu12_ip6_dr);
+  wwtree->Branch("HLT_mu7_ip4_pt",    &HLT_mu7_ip4_pt);
+  wwtree->Branch("HLT_mu8_ip3_pt",    &HLT_mu8_ip3_pt);
+  wwtree->Branch("HLT_mu8_ip3p5_pt",  &HLT_mu8_ip3p5_pt);
+  wwtree->Branch("HLT_mu8_ip5_pt",    &HLT_mu8_ip5_pt);
+  wwtree->Branch("HLT_mu8_ip6_pt",    &HLT_mu8_ip6_pt);
+  wwtree->Branch("HLT_mu9_ip4_pt",    &HLT_mu9_ip4_pt);
+  wwtree->Branch("HLT_mu9_ip5_pt",    &HLT_mu9_ip5_pt);
+  wwtree->Branch("HLT_mu9_ip6_pt",    &HLT_mu9_ip6_pt);
+  wwtree->Branch("HLT_mu10p5_ip3p5_pt", &HLT_mu10p5_ip3p5_pt);
+  wwtree->Branch("HLT_mu12_ip6_pt",   &HLT_mu12_ip6_pt);
 
-  wwtree->Branch("mu7_ip4_fired",    &mu7_ip4_fired);
-  wwtree->Branch("mu8_ip3_fired",    &mu8_ip3_fired);
-  wwtree->Branch("mu8_ip3p5_fired",  &mu8_ip3p5_fired);
-  wwtree->Branch("mu8_ip5_fired",    &mu8_ip5_fired);
-  wwtree->Branch("mu8_ip6_fired",    &mu8_ip6_fired);
-  wwtree->Branch("mu9_ip4_fired",    &mu9_ip4_fired);
-  wwtree->Branch("mu9_ip5_fired",    &mu9_ip5_fired);
-  wwtree->Branch("mu9_ip6_fired",    &mu9_ip6_fired);
-  wwtree->Branch("mu10p5_ip3p5_fired", &mu10p5_ip3p5_fired);
-  wwtree->Branch("mu12_ip6_fired",   &mu12_ip6_fired);
+  wwtree->Branch("HLT_mu7_ip4_dr",    &HLT_mu7_ip4_dr);
+  wwtree->Branch("HLT_mu8_ip3_dr",    &HLT_mu8_ip3_dr);
+  wwtree->Branch("HLT_mu8_ip3p5_dr",  &HLT_mu8_ip3p5_dr);
+  wwtree->Branch("HLT_mu8_ip5_dr",    &HLT_mu8_ip5_dr);
+  wwtree->Branch("HLT_mu8_ip6_dr",    &HLT_mu8_ip6_dr);
+  wwtree->Branch("HLT_mu9_ip4_dr",    &HLT_mu9_ip4_dr);
+  wwtree->Branch("HLT_mu9_ip5_dr",    &HLT_mu9_ip5_dr);
+  wwtree->Branch("HLT_mu9_ip6_dr",    &HLT_mu9_ip6_dr);
+  wwtree->Branch("HLT_mu10p5_ip3p5_dr", &HLT_mu10p5_ip3p5_dr);
+  wwtree->Branch("HLT_mu12_ip6_dr",   &HLT_mu12_ip6_dr);
 
-  wwtree->Branch("C_pi_isHnlDaughter"        , &C_pi_isHnlDaughter        );
-  wwtree->Branch("C_mu1_isHnlDaughter"        , &C_mu1_isHnlDaughter        );
-  wwtree->Branch("C_trigMu_isHnlBrother"        , &C_trigMu_isHnlBrother        );
+  wwtree->Branch("HLT_mu7_ip4_fired",    &HLT_mu7_ip4_fired);
+  wwtree->Branch("HLT_mu8_ip3_fired",    &HLT_mu8_ip3_fired);
+  wwtree->Branch("HLT_mu8_ip3p5_fired",  &HLT_mu8_ip3p5_fired);
+  wwtree->Branch("HLT_mu8_ip5_fired",    &HLT_mu8_ip5_fired);
+  wwtree->Branch("HLT_mu8_ip6_fired",    &HLT_mu8_ip6_fired);
+  wwtree->Branch("HLT_mu9_ip4_fired",    &HLT_mu9_ip4_fired);
+  wwtree->Branch("HLT_mu9_ip5_fired",    &HLT_mu9_ip5_fired);
+  wwtree->Branch("HLT_mu9_ip6_fired",    &HLT_mu9_ip6_fired);
+  wwtree->Branch("HLT_mu10p5_ip3p5_fired", &HLT_mu10p5_ip3p5_fired);
+  wwtree->Branch("HLT_mu12_ip6_fired",   &HLT_mu12_ip6_fired);
+
+  wwtree->Branch("C_pi_isHnlDaughter"      , &C_pi_isHnlDaughter );
+  wwtree->Branch("C_mu_Hnl_isHnlDaughter"  , &C_mu_Hnl_isHnlDaughter );
+  wwtree->Branch("C_mu_B_isHnlBrother"    , &C_mu_B_isHnlBrother );
 
 }
 
