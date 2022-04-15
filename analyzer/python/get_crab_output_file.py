@@ -6,8 +6,14 @@ from hnlAnalysis.analyzer.tools import *
 crab_dir = sys.argv[1]
 crab_log = os.path.join(crab_dir,"crab.log")
 
+s = subprocess.check_output('cat {} | grep "^config.JobType.psetName"'.format(crab_log),shell=True)
+cmsrun_cfg_name = s.split(" ")[-1]
+cfg_label = cmsrun_cfg_name[:cmsrun_cfg_name.find("_cfg.py")].split("/")[-1]
+
+
+
 in_cfg_full_path  = "/afs/cern.ch/work/l/llunerti/private/CMSSW_10_2_27/src/hnlAnalysis/analyzer/cfg/miniAOD_input.json"
-out_cfg_full_path = "/afs/cern.ch/work/l/llunerti/private/hnlTreeAnalyzer/cfg/hnl_tree_input_fromCrab.json"
+out_cfg_full_path = "/afs/cern.ch/work/l/llunerti/private/hnlTreeAnalyzer/cfg/"+ cfg_label +"_tree_input_fromCrab.json"
 
 #get metadata from input json file
 input_miniAOD_cfg = {}
