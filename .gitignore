@@ -5,6 +5,5 @@
 *.out
 *.std
 *.err
-*.xml
 *.log
 production/crab_projects/*
