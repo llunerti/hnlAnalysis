@@ -1,5 +1,6 @@
 import subprocess
 import json
+import os
 import sys
 from hnlAnalysis.analyzer.tools import *
 
@@ -12,8 +13,11 @@ cfg_label = cmsrun_cfg_name[:cmsrun_cfg_name.find("_cfg.py")].split("/")[-1]
 
 
 
-in_cfg_full_path  = "/afs/cern.ch/work/l/llunerti/private/CMSSW_10_2_27/src/hnlAnalysis/analyzer/cfg/miniAOD_input.json"
-out_cfg_full_path = "/afs/cern.ch/work/l/llunerti/private/hnlTreeAnalyzer/cfg/"+ cfg_label +"_tree_input_fromCrab.json"
+in_cfg_full_path  = "/afs/cern.ch/work/l/llunerti/private/CMSSW_10_6_30/src/hnlAnalysis/analyzer/cfg/miniAOD_input.json"
+out_cfg_full_path = "/afs/cern.ch/work/l/llunerti/private/hnlTreeAnalyzer/cfg/"+ cfg_label +"_UL_tree_input_fromCrab.json"
+
+if not os.path.isfile(out_cfg_full_path):
+    subprocess.call("echo '{{}}' >> {}".format(out_cfg_full_path),shell=True)
 
 #get metadata from input json file
 input_miniAOD_cfg = {}
